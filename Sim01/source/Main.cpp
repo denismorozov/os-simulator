@@ -1,6 +1,6 @@
 /* Sim01
 *
-* Filename: main.cpp
+* Filename: Main.cpp
 *
 * Description: This operating system simulator runs a single program. Simulator
 * settings are specified in the configuration file.

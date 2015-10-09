@@ -9,13 +9,11 @@ Simulator::Simulator( const std::string file_path )
     catch( const std::runtime_error& e )
     {
         std::cerr << e.what();
-
-        // can't continue if there was a problem reading config file
         throw;
     }
 
     program_ = new Program( meta_data_file_path_ );
-    std::cout.precision(6);
+    std::cout.precision(6); // precision for printing doubles/floats
 
     if( log_location_ == BOTH || log_location_ == FILE )
     {
@@ -38,18 +36,16 @@ Simulator::~Simulator()
 
 void Simulator::run()
 {
-    // create a reference for the program queue (less typing)
-    std::queue<Operation> &operations = program_->operations;
-    
-    while( operations.size() != 0)
+    while( program_->operations.size() != 0)
     {
-        process_operation( operations.front() );
-        operations.pop();
+        process_operation( program_->operations.front() );
+        program_->operations.pop();
     }
 }
 
 void Simulator::process_operation( const Operation &operation )
 {
+    // Simulator operation
     if( operation.type == 'S' )
     {
         if( operation.description == "start" )
@@ -62,7 +58,9 @@ void Simulator::process_operation( const Operation &operation )
             print("Simulator program ending");
         }
         
-    }   
+    }
+
+    // Program operation 
     else if( operation.type == 'A' )
     {
         if( operation.description == "start" )
@@ -75,6 +73,8 @@ void Simulator::process_operation( const Operation &operation )
             print("OS: removing process 1");
         }
     }
+
+    // Processing operation
     else if( operation.type == 'P' )
     {
         print("Process 1: start processing action");
@@ -84,54 +84,78 @@ void Simulator::process_operation( const Operation &operation )
         print("Process 1: end processing action");
 
     }
+
+    // Input/Output operation
     else if( operation.type == 'I' || operation.type == 'O' )
     {
-        if( operation.description == "hard drive" )
-        {
-            std::string access_type;
-            if( operation.type == 'I' )
-            {
-                access_type = "input";
-            }
+        /*
+        typedef void* (Simulator::*Ptr)(void);
+        typedef void* (*Pthread)(void*);
 
-            else
-            {
-                access_type = "output";
-            }
+        Ptr t = &Simulator::process_IO;
+        Pthread p = *(Pthread*)&t;
 
-            print("Process 1: start hard drive " + access_type );
-            std::this_thread::sleep_for(
-                std::chrono::milliseconds( operation.duration * hard_drive_cycle_time_ )
-            );
-            print("Process 1: start keyboard input " + access_type );
-        }
-        else if( operation.description == "keyboard" )
+        std::thread IO_thread( p, this, operation );
+
+        // wait for IO to finish execution
+        if( IO_thread.joinable() )
         {
-            print("Process 1: start keyboard input");
-            std::this_thread::sleep_for(
-                std::chrono::milliseconds( operation.duration * keyboard_cycle_time_)
-            );
-            print("Process 1: end keyboard input");
-        }
-        else if( operation.description == "monitor" )
-        {
-            print("Process 1: start monitor output");
-            std::this_thread::sleep_for(
-                std::chrono::milliseconds( operation.duration * monitor_display_time_ )
-            ); 
-            print("Process 1: end monitor output");           
-        }
-        else if( operation.description == "printer" )
-        {
-            print("Process 1: start printer output");
-            std::this_thread::sleep_for(
-                std::chrono::milliseconds( operation.duration * printer_cycle_time_ )
-            ); 
-            print("Process 1: end printer output");               
-        }
+            IO_thread.join();
+        }*/
+        process_IO(operation);
     }
 }
 
+void Simulator::process_IO( const Operation& operation )
+{
+    if( operation.description == "hard drive" )
+    {
+        std::string access_type;
+        if( operation.type == 'I' )
+        {
+            access_type = "input";
+        }
+
+        else
+        {
+            access_type = "output";
+        }
+
+        print("Process 1: start hard drive " + access_type );
+        std::this_thread::sleep_for(
+            std::chrono::milliseconds( operation.duration * hard_drive_cycle_time_ )
+        );
+        print("Process 1: start keyboard input " + access_type );
+    }
+    else if( operation.description == "keyboard" )
+    {
+        print("Process 1: start keyboard input");
+        std::this_thread::sleep_for(
+            std::chrono::milliseconds( operation.duration * keyboard_cycle_time_)
+        );
+        print("Process 1: end keyboard input");
+    }
+    else if( operation.description == "monitor" )
+    {
+        print("Process 1: start monitor output");
+        std::this_thread::sleep_for(
+            std::chrono::milliseconds( operation.duration * monitor_display_time_ )
+        ); 
+        print("Process 1: end monitor output");           
+    }
+    else if( operation.description == "printer" )
+    {
+        print("Process 1: start printer output");
+        std::this_thread::sleep_for(
+            std::chrono::milliseconds( operation.duration * printer_cycle_time_ )
+        ); 
+        print("Process 1: end printer output");               
+    }
+}
+
+/* Prints OS action to file, screen, or both, with elapsed time
+* @param Message to be printed
+*/
 void Simulator::print( const std::string message )
 {
     auto time = elapsed_seconds().count();
@@ -142,15 +166,22 @@ void Simulator::print( const std::string message )
     if( log_location_ == BOTH || log_location_ == FILE )
     {
         fout_ << std::fixed << time << " - " << message << std::endl;
-    }
-    
+    }    
 }
 
+/* Calculates elapsed time from the beginning of the simulation
+* @return Time difference
+*/
 std::chrono::duration<double> Simulator::elapsed_seconds()
 {
     now_ = std::chrono::system_clock::now();
     return now_-start_;
 }
+
+/* Loads data from the config file
+* @param Path to config file
+* @except Throws exception if file wasn't found or file format isn't correct
+*/
 void Simulator::load_config( const std::string file_path )
 {
     // attempt opening the file
