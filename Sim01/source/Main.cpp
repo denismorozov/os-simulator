@@ -21,7 +21,7 @@
 int main(const int argc, char const *argv[])
 {
     // Check to see if a configuration file was provided
-    if( argc != 1 )
+    if( argc != 2 )
     {
         std::cerr 
         << "Error: Incorrect number of command line arguments" << std::endl
@@ -30,8 +30,16 @@ int main(const int argc, char const *argv[])
     }
 
     // Run the simulation with provided config file
-    Simulator simulator( argv[1] );
-    simulator.run();
+    try
+    {
+        Simulator simulator( argv[1] );
+        simulator.run();
+    }
+    catch( ... )
+    {
+        std::cerr << "Exiting program" << std::endl;
+        return EXIT_FAILURE;
+    }
 
     return EXIT_SUCCESS;
 }
