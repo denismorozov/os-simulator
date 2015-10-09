@@ -1,6 +1,11 @@
+#ifndef SIMULATOR_H
+#define SIMULATOR_H
+
 #include <string>
 #include <queue>
 #include <fstream>
+
+#include "Program.h"
 
 class Simulator
 {
@@ -22,8 +27,10 @@ private:
 
     // program object used to store each program's information
     // will be a queue of programs for next phase
-    Program program;
+    Program *program;
 
     // helper function for the constructor
     void loadConfig( const std::string filePath );
 };
+
+#endif // SIMULATOR_H

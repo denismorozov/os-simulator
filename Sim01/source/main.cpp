@@ -18,7 +18,7 @@
 #include "Simulator.h"
 
 /* Main */
-int main(const int argc, const char const *argv[])
+int main(const int argc, char const *argv[])
 {
     // Check to see if a configuration file was provided
     if( argc != 1 )

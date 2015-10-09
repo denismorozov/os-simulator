@@ -10,7 +10,7 @@ Program::~Program()
 
 }
 
-Program::loadMetaData( const std::string filePath )
+void Program::loadMetaData( const std::string filePath )
 {
     
 }

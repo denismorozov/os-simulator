@@ -10,12 +10,12 @@ Simulator::~Simulator()
 
 }
 
-Simulator::run()
+void Simulator::run()
 {
 
 }
 
-Simulator::loadConfig( const std::string filePath )
+void Simulator::loadConfig( const std::string filePath )
 {
 
 }
