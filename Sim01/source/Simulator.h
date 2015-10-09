@@ -1,36 +1,48 @@
 #ifndef SIMULATOR_H
 #define SIMULATOR_H
 
+#include <fstream>
+#include <iostream>
+#include <limits>
+#include <stdexcept>
 #include <string>
 #include <queue>
-#include <fstream>
 
 #include "Program.h"
 
 class Simulator
 {
 public:
+
     Simulator( const std::string filePath );
     ~Simulator();
-
     void run();
 
 private:
-    // simulator config data
-    int processor_cycle_time;
-    int monitor_display_time;
-    int hard_drive_cycle_time;
-    int printer_cycle_time;
-    int keyboard_cycle_time;
-    int log_location; // 0 for screen, 1 for file, 2 for both 
-    int log_file_path;
+
+    // declaration of enum for possible simulator output locations
+    enum LogLocation
+    { 
+        SCREEN, FILE, BOTH 
+    };
+
+    // simulator config data, variables declared in the same order as config file
+    const float simulator_version_ = 1.0;
+    std::string meta_data_file_path_;
+    int processor_cycle_time_;
+    int monitor_display_time_;
+    int hard_drive_cycle_time_;
+    int printer_cycle_time_;
+    int keyboard_cycle_time_;
+    LogLocation log_location_;
+    std::string log_file_path_;
 
     // program object used to store each program's information
     // will be a queue of programs for next phase
-    Program *program;
+    Program *program_ = nullptr;
 
     // helper function for the constructor
-    void loadConfig( const std::string filePath );
+    void load_config( const std::string filePath );
 };
 
 #endif // SIMULATOR_H

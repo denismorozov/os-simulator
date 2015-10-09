@@ -7,7 +7,7 @@
 
 struct Operation
 {
-    enum type
+    enum Type
     {
         S, // Simulation
         A, // Program
@@ -15,6 +15,7 @@ struct Operation
         I, // Input
         P // Process
     };
+    Type type;
     int duration;
     std::string description;
 };

@@ -35,6 +35,8 @@ int main(const int argc, char const *argv[])
         Simulator simulator( argv[1] );
         simulator.run();
     }
+    
+    // Catch unfixable errors, e.g. file not found
     catch( ... )
     {
         std::cerr << "Exiting program" << std::endl;
