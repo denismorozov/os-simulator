@@ -15,6 +15,12 @@ Simulator::Simulator( const std::string file_path )
     }
 
     program_ = new Program( meta_data_file_path_ );
+    std::cout.precision(6);
+
+    if( log_location_ == BOTH || log_location_ == FILE )
+    {
+        fout_.open( log_file_path_ );
+    }
 }
 
 Simulator::~Simulator()
@@ -23,13 +29,128 @@ Simulator::~Simulator()
     {
         delete program_;
     }
+
+    if(fout_.is_open())
+    {
+        fout_.close();
+    }
 }
 
 void Simulator::run()
 {
-
+    // create a reference for the program queue (less typing)
+    std::queue<Operation> &operations = program_->operations;
+    
+    while( operations.size() != 0)
+    {
+        process_operation( operations.front() );
+        operations.pop();
+    }
 }
 
+void Simulator::process_operation( const Operation &operation )
+{
+    if( operation.type == 'S' )
+    {
+        if( operation.description == "start" )
+        {
+            start_ = std::chrono::system_clock::now();
+            print("Simulator program starting");
+        }
+        else
+        {
+            print("Simulator program ending");
+        }
+        
+    }   
+    else if( operation.type == 'A' )
+    {
+        if( operation.description == "start" )
+        {
+            print("OS: preparing process 1");
+            print("OS: starting process 1");
+        }
+        else
+        {
+            print("OS: removing process 1");
+        }
+    }
+    else if( operation.type == 'P' )
+    {
+        print("Process 1: start processing action");
+        std::this_thread::sleep_for(
+            std::chrono::milliseconds( operation.duration * processor_cycle_time_ )
+        );
+        print("Process 1: end processing action");
+
+    }
+    else if( operation.type == 'I' || operation.type == 'O' )
+    {
+        if( operation.description == "hard drive" )
+        {
+            std::string access_type;
+            if( operation.type == 'I' )
+            {
+                access_type = "input";
+            }
+
+            else
+            {
+                access_type = "output";
+            }
+
+            print("Process 1: start hard drive " + access_type );
+            std::this_thread::sleep_for(
+                std::chrono::milliseconds( operation.duration * hard_drive_cycle_time_ )
+            );
+            print("Process 1: start keyboard input " + access_type );
+        }
+        else if( operation.description == "keyboard" )
+        {
+            print("Process 1: start keyboard input");
+            std::this_thread::sleep_for(
+                std::chrono::milliseconds( operation.duration * keyboard_cycle_time_)
+            );
+            print("Process 1: end keyboard input");
+        }
+        else if( operation.description == "monitor" )
+        {
+            print("Process 1: start monitor output");
+            std::this_thread::sleep_for(
+                std::chrono::milliseconds( operation.duration * monitor_display_time_ )
+            ); 
+            print("Process 1: end monitor output");           
+        }
+        else if( operation.description == "printer" )
+        {
+            print("Process 1: start printer output");
+            std::this_thread::sleep_for(
+                std::chrono::milliseconds( operation.duration * printer_cycle_time_ )
+            ); 
+            print("Process 1: end printer output");               
+        }
+    }
+}
+
+void Simulator::print( const std::string message )
+{
+    auto time = elapsed_seconds().count();
+    if( log_location_ == BOTH || log_location_ == SCREEN )
+    {
+        std::cout << std::fixed << time << " - " << message << std::endl;
+    }
+    if( log_location_ == BOTH || log_location_ == FILE )
+    {
+        fout_ << std::fixed << time << " - " << message << std::endl;
+    }
+    
+}
+
+std::chrono::duration<double> Simulator::elapsed_seconds()
+{
+    now_ = std::chrono::system_clock::now();
+    return now_-start_;
+}
 void Simulator::load_config( const std::string file_path )
 {
     // attempt opening the file
@@ -89,7 +210,7 @@ void Simulator::load_config( const std::string file_path )
     {
         log_location_ = BOTH;
     }
-    else if( log_string == "File" )
+    else if( log_string == "Log to File" )
     {
         log_location_ = FILE;
     }

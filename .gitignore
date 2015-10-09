@@ -3,3 +3,6 @@ sim01
 
 # Object files
 *.o
+
+# Output files
+*.lgf

@@ -1,11 +1,14 @@
 #ifndef SIMULATOR_H
 #define SIMULATOR_H
 
+#include <chrono>
+#include <ctime>
 #include <fstream>
 #include <iostream>
 #include <limits>
 #include <stdexcept>
 #include <string>
+#include <thread>
 #include <queue>
 
 #include "Program.h"
@@ -37,12 +40,23 @@ private:
     LogLocation log_location_;
     std::string log_file_path_;
 
+    // time variables
+    std::chrono::time_point<std::chrono::system_clock> start_, now_;
+    std::chrono::duration<double> elapsed_seconds();
+
     // program object used to store each program's information
     // will be a queue of programs for next phase
     Program *program_ = nullptr;
 
-    // helper function for the constructor
+    // helper function that processes each individual program operation
+    void process_operation( const Operation & operation );
+
+    void print( const std::string message );
+    
+    // helper function for the constructor to load config
     void load_config( const std::string file_path );
+
+    std::ofstream fout_;
 };
 
 #endif // SIMULATOR_H
