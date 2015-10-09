@@ -15,6 +15,7 @@ struct Operation
         I, // Input
         P // Process
     };
+    
     Type type;
     int duration;
     std::string description;
@@ -23,13 +24,13 @@ struct Operation
 class Program
 {
 public:
-    Program( const std::string filePath );
+    Program( const std::string file_path );
     ~Program();
     std::queue<Operation> operations;
 
 private:
     // fills queue with program's operations
-    void loadMetaData( const std::string filePath );        
+    void load_meta_data( const std::string file_path );        
 };
 
 #endif // PROGRAM_H

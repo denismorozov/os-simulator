@@ -1,6 +1,6 @@
 #include "Simulator.h"
 
-Simulator::Simulator( const std::string filePath )
+Simulator::Simulator( const std::string file_path )
 {
     try
     {
@@ -9,8 +9,12 @@ Simulator::Simulator( const std::string filePath )
     catch( const std::runtime_error& e )
     {
         std::cerr << e.what();
+
+        // can't continue if there was a problem reading config file
         throw;
     }
+
+    program_ = new Program( meta_data_file_path_ );
 }
 
 Simulator::~Simulator()

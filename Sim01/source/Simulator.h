@@ -14,7 +14,7 @@ class Simulator
 {
 public:
 
-    Simulator( const std::string filePath );
+    Simulator( const std::string file_path );
     ~Simulator();
     void run();
 
@@ -42,7 +42,7 @@ private:
     Program *program_ = nullptr;
 
     // helper function for the constructor
-    void load_config( const std::string filePath );
+    void load_config( const std::string file_path );
 };
 
 #endif // SIMULATOR_H
