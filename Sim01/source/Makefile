@@ -1,6 +1,6 @@
 CC = g++
-LFLAGS = -std=c++14 -Wall -Werror
-CFLAGS = -std=c++14 -Wall -Werror -c
+LFLAGS = -std=c++14 -Wall -pthread
+CFLAGS = -std=c++14 -Wall -pthread -c
 OBJS = Main.o Simulator.o Program.o
 
 sim01: $(OBJS)

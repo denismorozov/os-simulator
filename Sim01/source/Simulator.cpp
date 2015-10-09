@@ -88,21 +88,14 @@ void Simulator::process_operation( const Operation &operation )
     // Input/Output operation
     else if( operation.type == 'I' || operation.type == 'O' )
     {
-        /*
-        typedef void* (Simulator::*Ptr)(void);
-        typedef void* (*Pthread)(void*);
-
-        Ptr t = &Simulator::process_IO;
-        Pthread p = *(Pthread*)&t;
-
-        std::thread IO_thread( p, this, operation );
+        // create a thread for any I/O operation
+        std::thread IO_thread( [this, operation](){ process_IO(operation); });
 
         // wait for IO to finish execution
         if( IO_thread.joinable() )
         {
             IO_thread.join();
-        }*/
-        process_IO(operation);
+        }
     }
 }
 
@@ -125,7 +118,7 @@ void Simulator::process_IO( const Operation& operation )
         std::this_thread::sleep_for(
             std::chrono::milliseconds( operation.duration * hard_drive_cycle_time_ )
         );
-        print("Process 1: start keyboard input " + access_type );
+        print("Process 1: end hard drive " + access_type );
     }
     else if( operation.description == "keyboard" )
     {
