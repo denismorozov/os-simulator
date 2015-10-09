@@ -51,15 +51,15 @@ void Program::load_meta_data( const std::string file_path )
         std::getline(fin, input, ';');
         paranthesis_loc = input.find(')');
 
+        // construct Operation object
         operation.type = input.front();        
         operation.description = input.substr(2, paranthesis_loc-2);
         operation.duration = std::stoi(
             std::string( input.begin()+paranthesis_loc+1, input.end()) 
         );
 
-        std::cout << operation.type;
-        std::cout << operation.description;
-        std::cout << operation.duration << std::endl;
+        // insert operation into queue
+        operations.push(operation);
     }
 
     // get S(end)0 (simulator end)
@@ -67,14 +67,15 @@ void Program::load_meta_data( const std::string file_path )
     std::getline(fin, input, '.');
     paranthesis_loc = input.find(')');
 
+    // construct Operation object
     operation.type = input.front();
     operation.description = input.substr(2, paranthesis_loc-2);
     operation.duration = std::stoi(
         std::string( input.begin()+paranthesis_loc+1, input.end()) 
     );
-            std::cout << operation.type;
-        std::cout << operation.description;
-        std::cout << operation.duration << std::endl;
+
+    // insert operation into queue
+    operations.push(operation);
 
     // make sure the last line of the file is correct
     fin >> std::ws;
