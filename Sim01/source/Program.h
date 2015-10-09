@@ -1,6 +1,6 @@
 /*
 * Filename: Program.h
-* Brief: Specifications for the Program and Operation objects. 
+* Specifications for the Program and Operation objects. 
 */
 
 #ifndef PROGRAM_H

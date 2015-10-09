@@ -1,6 +1,6 @@
 /*
 * Filename: Simulator.h
-* Brief: Specifications for the Simulator object
+* Specifications for the Simulator object
 */
 
 #ifndef SIMULATOR_H

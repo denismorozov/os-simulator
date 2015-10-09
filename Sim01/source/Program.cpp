@@ -1,6 +1,8 @@
 #include "Program.h"
 
-/* Calls fnc to load meta-data file, throws exception if error occurs */
+/* Calls fnc to load meta-data file, throws exception if error occurs 
+* @param file path for the meta data file
+*/
 Program::Program( const std::string file_path )
 {
     try
@@ -18,7 +20,9 @@ Program::~Program()
 {
 }
 
-/* Loads each operation specified in the meta-data file into queue */
+/* Loads each operation specified in the meta-data file into queue 
+* @param file path for the meta data file
+*/
 void Program::load_meta_data( const std::string file_path )
 {
     // string object that's used throughout this function
