@@ -35,29 +35,50 @@ void Program::load_meta_data( const std::string file_path )
 
     // make sure the first line of the file is correct
     std::getline(fin, input, ':');
-    std::cout << input << std::endl;
     if( input != "Start Program Meta-Data Code" )
     {
         throw std::runtime_error( "Error: Incorrect meta-data file format" );
     }
 
+    Operation operation;
+    int paranthesis_loc;
+
+    // get S(start)0 (sim start) and all program data
     while( input != "A(end)0" )
     {
+        // after getline, string looks like this: "S(start)0"
         fin >> std::ws;
         std::getline(fin, input, ';');
+        paranthesis_loc = input.find(')');
 
-        std::cout << input << std::endl;
+        operation.type = input.front();        
+        operation.description = input.substr(2, paranthesis_loc-2);
+        operation.duration = std::stoi(
+            std::string( input.begin()+paranthesis_loc+1, input.end()) 
+        );
+
+        std::cout << operation.type;
+        std::cout << operation.description;
+        std::cout << operation.duration << std::endl;
     }
 
     // get S(end)0 (simulator end)
     fin >> std::ws;
     std::getline(fin, input, '.');
-    std::cout << input << std::endl;
+    paranthesis_loc = input.find(')');
+
+    operation.type = input.front();
+    operation.description = input.substr(2, paranthesis_loc-2);
+    operation.duration = std::stoi(
+        std::string( input.begin()+paranthesis_loc+1, input.end()) 
+    );
+            std::cout << operation.type;
+        std::cout << operation.description;
+        std::cout << operation.duration << std::endl;
 
     // make sure the last line of the file is correct
     fin >> std::ws;
     std::getline(fin, input, '.');
-    std::cout << input << std::endl;
     if( input != "End Program Meta-Data Code" )
     {
         throw std::runtime_error( "Error: Incorrect meta-data file format" );

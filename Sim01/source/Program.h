@@ -9,18 +9,9 @@
 
 struct Operation
 {
-    enum Type
-    {
-        S, // Simulation
-        A, // Program
-        O, // Output
-        I, // Input
-        P // Process
-    };
-    
-    Type type;
-    int duration;
+    char type;
     std::string description;
+    int duration;
 };
 
 class Program
