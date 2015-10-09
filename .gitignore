@@ -1,2 +1,5 @@
 # Executable
 sim01
+
+# Object files
+*.o
