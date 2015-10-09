@@ -1,9 +1,11 @@
 #ifndef PROGRAM_H
 #define PROGRAM_H
 
-#include <queue>
+#include <fstream>
+#include <iostream>
 #include <string>
 #include <stdexcept>
+#include <queue>
 
 struct Operation
 {
