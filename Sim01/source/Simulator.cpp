@@ -4,7 +4,7 @@ Simulator::Simulator( const std::string file_path )
 {
     try
     {
-        load_config( filePath );
+        load_config( file_path );
     }
     catch( const std::runtime_error& e )
     {
@@ -81,7 +81,7 @@ void Simulator::load_config( const std::string file_path )
     fin.ignore( limit, ':' );
 
     std::string log_string;
-    fin.ignore(1); // ignore the space after :
+    fin >> std::ws; // ignore the space after :
     std::getline(fin, log_string, '\n');
 
     // transform the log location to enum for easier processing later
