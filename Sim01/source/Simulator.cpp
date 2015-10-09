@@ -1,5 +1,11 @@
 #include "Simulator.h"
 
+/* Constructor for the Simulator class
+* Loads the config file for the simulator, if no problems occured then it
+* creates the program object (which reads the meta-data file). Also opens the
+* output file if needed, and sets precision of double/float outputs
+* @param file path for configuration file
+*/
 Simulator::Simulator( const std::string file_path )
 {
     try
@@ -34,6 +40,8 @@ Simulator::~Simulator()
     }
 }
 
+/* Go through all the operations in the program's queue
+*/
 void Simulator::run()
 {
     while( program_->operations.size() != 0)
@@ -43,6 +51,10 @@ void Simulator::run()
     }
 }
 
+/* Process simulator, program, and processing operations. Create a thread for
+* each I/O operation.
+* @param operation = current operation that is being processed
+*/
 void Simulator::process_operation( const Operation &operation )
 {
     // Simulator operation
@@ -99,6 +111,9 @@ void Simulator::process_operation( const Operation &operation )
     }
 }
 
+/* Process I/O operation. This function is always called in a separate thread
+* @param operation = current operation that is being processed
+*/
 void Simulator::process_IO( const Operation& operation )
 {
     if( operation.description == "hard drive" )
