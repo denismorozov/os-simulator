@@ -40,8 +40,9 @@ Simulator::~Simulator()
 */
 void Simulator::run()
 {
+    // Announce beginning of sim and set starting time point
     start_ = std::chrono::system_clock::now();
-    print("Simulator program starting");
+    print("Simulator program starting");  
 
     // First In First Out scheduling
     if( scheduling_code_ == "FIFO" )
@@ -52,15 +53,21 @@ void Simulator::run()
             program.state = READY;
         }
 
+        int program_counter = 0;
         for( Program program : programs_ )
         {
             print("OS: selecting next process");
+            program_counter++;
+
+            program.id = program_counter;            
             program.state = RUNNING;
-            while( program.operations.size() != 0)
+
+            while( !program.operations.empty() )
             {
-                process_operation( program.operations.front() );
+                process_operation( program.operations.front(), program_counter );
                 program.operations.pop();
             }
+
             program.state = EXIT;
         }
     }
@@ -68,7 +75,45 @@ void Simulator::run()
     // Shortest Job First or Shortest Remaining Time First - Non Preemptive
     else
     {
+        print("OS: preparing all processes");
+        for( Program program : programs_ )
+        {
+            program.state = READY;
+            SRTF_queue_.push(program);
+        }
 
+        int program_counter = 0;
+        while( !SRTF_queue_.empty() )
+        {
+            print("OS: selecting next process");
+
+            // remove process with shortest remaining time from queue
+            Program program = SRTF_queue_.top();
+            SRTF_queue_.pop();
+
+            // simple way of telling whether the program ran before
+            if( program.id == 0 )
+            {
+                program_counter++;
+                program.id = program_counter;
+            }
+
+            process_operation( program.operations.front(), program.id );
+            program.running_time -= program.operations.front().duration;
+            program.operations.pop();
+
+            if( program.operations.size() == 1 )
+            {
+                assert( program.running_time == 0 );
+                process_operation( program.operations.front(), program.id );
+                program.operations.pop();
+            }
+
+            else
+            {
+                SRTF_queue_.push( program );
+            }
+        }
     }
 
     print("Simulator program ending");
@@ -77,29 +122,29 @@ void Simulator::run()
 /* Process program operations. Create a thread for each I/O operation.
 * @param operation = current operation that is being processed
 */
-void Simulator::process_operation( const Operation &operation )
+void Simulator::process_operation( const Operation &operation, const int program_id )
 {
     // Program operation 
     if( operation.type == 'A' )
     {
         if( operation.description == "start" )
         {
-            print("OS: starting process 1");
+            print("OS: starting process " + std::to_string(program_id));
         }
         else
         {
-            print("OS: removing process 1");
+            print("OS: removing process " + std::to_string(program_id));
         }
     }
 
     // Processing operation
     else if( operation.type == 'P' )
     {
-        print("Process 1: start processing action");
+        print("Process " + std::to_string(program_id) + ": start processing action");
         std::this_thread::sleep_for(
             std::chrono::milliseconds( operation.duration * processor_cycle_time_ )
         );
-        print("Process 1: end processing action");
+        print("Process " + std::to_string(program_id) + ": end processing action");
 
     }
 
@@ -107,7 +152,9 @@ void Simulator::process_operation( const Operation &operation )
     else if( operation.type == 'I' || operation.type == 'O' )
     {
         // create a thread for any I/O operation
-        std::thread IO_thread( [this, operation](){ process_IO(operation); });
+        std::thread IO_thread( [this, operation, program_id](){
+            process_IO(operation, program_id);
+        });
 
         // wait for IO to finish execution
         if( IO_thread.joinable() )
@@ -120,7 +167,7 @@ void Simulator::process_operation( const Operation &operation )
 /* Process I/O operation. This function is always called in a separate thread
 * @param operation = current operation that is being processed
 */
-void Simulator::process_IO( const Operation& operation )
+void Simulator::process_IO( const Operation& operation, const int program_id )
 {
     if( operation.description == "hard drive" )
     {
@@ -135,35 +182,35 @@ void Simulator::process_IO( const Operation& operation )
             access_type = "output";
         }
 
-        print("Process 1: start hard drive " + access_type );
+        print("Process " + std::to_string(program_id) + ": start hard drive " + access_type );
         std::this_thread::sleep_for(
             std::chrono::milliseconds( operation.duration * hard_drive_cycle_time_ )
         );
-        print("Process 1: end hard drive " + access_type );
+        print("Process " + std::to_string(program_id) + ": end hard drive " + access_type );
     }
     else if( operation.description == "keyboard" )
     {
-        print("Process 1: start keyboard input");
+        print("Process " + std::to_string(program_id) + ": start keyboard input");
         std::this_thread::sleep_for(
             std::chrono::milliseconds( operation.duration * keyboard_cycle_time_)
         );
-        print("Process 1: end keyboard input");
+        print("Process " + std::to_string(program_id) + ": end keyboard input");
     }
     else if( operation.description == "monitor" )
     {
-        print("Process 1: start monitor output");
+        print("Process " + std::to_string(program_id) + ": start monitor output");
         std::this_thread::sleep_for(
             std::chrono::milliseconds( operation.duration * monitor_display_time_ )
         ); 
-        print("Process 1: end monitor output");           
+        print("Process " + std::to_string(program_id) + ": end monitor output");           
     }
     else if( operation.description == "printer" )
     {
-        print("Process 1: start printer output");
+        print("Process " + std::to_string(program_id) + ": start printer output");
         std::this_thread::sleep_for(
             std::chrono::milliseconds( operation.duration * printer_cycle_time_ )
         ); 
-        print("Process 1: end printer output");               
+        print("Process " + std::to_string(program_id) + ": end printer output");               
     }
 }
 
@@ -210,7 +257,7 @@ void Simulator::load_config( const std::string file_path )
     std::getline(fin, config_format_line, '\n');
     if( config_format_line != "Start Simulator Configuration File" )
     {
-        throw std::runtime_error( "Error: Incorrect config file format" );
+        throw std::runtime_error( "Error: Incorrect config file format\n" );
     }
 
     // ignoring everything up to the ':' 
@@ -222,7 +269,7 @@ void Simulator::load_config( const std::string file_path )
     fin >> sim_version;
     if( sim_version != simulator_version_ )
     {
-        throw std::runtime_error( "Error: Wrong simulator version" );
+        throw std::runtime_error( "Error: Wrong simulator version\n" );
     }
     fin.ignore( limit, ':' );
 
@@ -236,7 +283,7 @@ void Simulator::load_config( const std::string file_path )
         scheduling_code_ != "SJF" &&
         scheduling_code_ != "SRTF-N" )
     {
-        throw std::runtime_error( "Error: Unrecognized scheduling code" );
+        throw std::runtime_error( "Error: Unrecognized scheduling code\n" );
     }
 
     fin >> processor_cycle_time_;
@@ -279,7 +326,7 @@ void Simulator::load_config( const std::string file_path )
     fin >> config_format_line;
     if( config_format_line != "End" )
     {
-        throw std::runtime_error( "Error: Incorrect config file format" );
+        throw std::runtime_error( "Error: Incorrect config file format\n" );
     }
 
     fin.close();
@@ -308,7 +355,7 @@ void Simulator::load_meta_data( const std::string file_path )
     if( input != "Start Program Meta-Data Code:\nS(start)0" )
     {
         throw std::runtime_error( "Error: Incorrect meta-data file format: \
-            Simulator start flag is missing" );
+            Simulator start flag is missing\n" );
     }
 
     Operation operation;
@@ -350,7 +397,7 @@ void Simulator::load_meta_data( const std::string file_path )
     if( input != "S(end)0" )
     {
         throw std::runtime_error( "Error: Incorrect meta-data file format: \
-            Simulator end flag is missing" );
+            Simulator end flag is missing\n" );
     }
 
     // make sure the last line of the file is correct
@@ -358,7 +405,7 @@ void Simulator::load_meta_data( const std::string file_path )
     if( input != "End Program Meta-Data Code" )
     {
         throw std::runtime_error( "Error: Incorrect meta-data file format: \
-            Meta-Data file does not end after simulator operations end" );
+            Meta-Data file does not end after simulator operations end\n" );
     }
 
     fin.close();

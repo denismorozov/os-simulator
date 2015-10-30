@@ -39,6 +39,9 @@ public:
 
     State state = START;
     int running_time = 0;
+    int id = 0;
+
+    bool operator<( const Program &other ) const;
 
 private:
      

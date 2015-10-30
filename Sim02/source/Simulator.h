@@ -6,6 +6,7 @@
 #ifndef SIMULATOR_H
 #define SIMULATOR_H
 
+#include <cassert>
 #include <chrono>
 #include <ctime>
 #include <fstream>
@@ -32,10 +33,10 @@ public:
 private:
 
     // Helper function that processes each individual program operation
-    void process_operation( const Operation & operation );
+    void process_operation( const Operation & operation, const int program_id );
 
     // Helper function that deals with IO, created in a new thread
-    void process_IO( const Operation& operation );
+    void process_IO( const Operation& operation, const int program_id );
 
     // Prints elapsed time and current OS action
     void print( const std::string message );
@@ -51,6 +52,7 @@ private:
 
     // Program object used to store each program's information
     std::vector<Program> programs_;
+    std::priority_queue<Program> SRTF_queue_;
 
     // Declaration of enum for possible simulator output locations
     enum LogLocation

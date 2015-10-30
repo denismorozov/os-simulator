@@ -16,13 +16,17 @@ Program::Program()
     }
 }
 
+Program::~Program()
+{
+}
+
 void Program::add_operation( Operation operation )
 {
     operations.push(operation);
     running_time += operation.duration;
 }
 
-Program::~Program()
+bool Program::operator<( const Program &other ) const
 {
+    return running_time < other.running_time;
 }
-
