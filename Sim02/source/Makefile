@@ -3,8 +3,8 @@ LFLAGS = -std=c++11 -Wall -pthread
 CFLAGS = -std=c++11 -Wall -pthread -c
 OBJS = Main.o Simulator.o Program.o
 
-sim01: $(OBJS)
-	$(CC) $(LFLAGS) $(OBJS) -o sim01
+sim02: $(OBJS)
+	$(CC) $(LFLAGS) $(OBJS) -o sim02
 
 Main.o: Main.cpp Simulator.h Program.h
 	$(CC) $(CFLAGS) Main.cpp
