@@ -73,7 +73,7 @@ private:
     std::string log_file_path_;
 
     // Time variables
-    std::chrono::time_point<std::chrono::system_clock> start_, now_;
+    std::chrono::time_point<std::chrono::system_clock> start_;
 };
 
 #endif // SIMULATOR_H

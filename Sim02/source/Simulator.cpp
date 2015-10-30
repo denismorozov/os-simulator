@@ -46,36 +46,26 @@ Simulator::~Simulator()
 */
 void Simulator::run()
 {
+
+    start_ = std::chrono::system_clock::now();
+    print("Simulator program starting");
+
     while( program_->operations.size() != 0)
     {
         process_operation( program_->operations.front() );
         program_->operations.pop();
     }
+
+    print("Simulator program ending");
 }
 
-/* Process simulator, program, and processing operations. Create a thread for
-* each I/O operation.
+/* Process program operations. Create a thread for each I/O operation.
 * @param operation = current operation that is being processed
 */
 void Simulator::process_operation( const Operation &operation )
 {
-    // Simulator operation
-    if( operation.type == 'S' )
-    {
-        if( operation.description == "start" )
-        {
-            start_ = std::chrono::system_clock::now();
-            print("Simulator program starting");
-        }
-        else
-        {
-            print("Simulator program ending");
-        }
-        
-    }
-
     // Program operation 
-    else if( operation.type == 'A' )
+    if( operation.type == 'A' )
     {
         if( operation.description == "start" )
         {
@@ -184,8 +174,7 @@ void Simulator::print( const std::string message )
 */
 std::chrono::duration<double> Simulator::elapsed_seconds()
 {
-    now_ = std::chrono::system_clock::now();
-    return now_-start_;
+    return std::chrono::system_clock::now()-start_;
 }
 
 /* Loads data from the config file
@@ -290,9 +279,9 @@ void Simulator::load_meta_data( const std::string file_path )
         throw std::runtime_error( error );
     }
 
-    // make sure the first line of the file is correct
-    std::getline(fin, input, ':');
-    if( input != "Start Program Meta-Data Code" )
+    // make sure the beginning of the file is correct
+    std::getline(fin, input, ';');
+    if( input != "Start Program Meta-Data Code:\nS(start)0" )
     {
         throw std::runtime_error( "Error: Incorrect meta-data file format" );
     }
@@ -300,7 +289,7 @@ void Simulator::load_meta_data( const std::string file_path )
     Operation operation;
     int paranthesis_loc;
 
-    // get S(start)0 (sim start) and all program data
+    // Get all program data
     while( input != "A(end)0" )
     {
         // after getline, string looks like this: "S(start)0"
@@ -319,20 +308,13 @@ void Simulator::load_meta_data( const std::string file_path )
         program_->add_operation(operation);
     }
 
-    // get S(end)0 (simulator end)
+    // Make sure the simulator end flag is there
     fin >> std::ws;
     std::getline(fin, input, '.');
-    paranthesis_loc = input.find(')');
-
-    // construct Operation object
-    operation.type = input.front();
-    operation.description = input.substr(2, paranthesis_loc-2);
-    operation.duration = std::stoi(
-        std::string( input.begin()+paranthesis_loc+1, input.end()) 
-    );
-
-    // insert operation into queue
-    program_->add_operation(operation);
+    if( input != "S(end)0" )
+    {
+        throw std::runtime_error( "Error: Incorrect meta-data file format" );
+    }
 
     // make sure the last line of the file is correct
     fin >> std::ws;
