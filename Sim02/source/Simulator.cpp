@@ -11,6 +11,8 @@ Simulator::Simulator( const std::string file_path )
     try
     {
         load_config( file_path );
+        program_ = new Program();
+        load_meta_data( meta_data_file_path_ );
     }
     catch( const std::runtime_error& e )
     {
@@ -18,7 +20,7 @@ Simulator::Simulator( const std::string file_path )
         throw;
     }
 
-    program_ = new Program( meta_data_file_path_ );
+
     std::cout.precision(6); // precision for printing doubles/floats
 
     if( log_location_ == BOTH || log_location_ == FILE )
@@ -266,6 +268,78 @@ void Simulator::load_config( const std::string file_path )
     if( config_format_line != "End" )
     {
         throw std::runtime_error( "Error: Incorrect config file format" );
+    }
+
+    fin.close();
+}
+
+/* Loads each operation specified in the meta-data file into queue 
+* @param file path for the meta data file
+*/
+void Simulator::load_meta_data( const std::string file_path )
+{
+
+    // string object that's used throughout this function
+    std::string input;
+
+    // attempt opening the file
+    std::ifstream fin( file_path, std::ifstream::in );
+    if(!fin)
+    {
+        std::string error = "Error: Unable to open file " + file_path + "\n";
+        throw std::runtime_error( error );
+    }
+
+    // make sure the first line of the file is correct
+    std::getline(fin, input, ':');
+    if( input != "Start Program Meta-Data Code" )
+    {
+        throw std::runtime_error( "Error: Incorrect meta-data file format" );
+    }
+
+    Operation operation;
+    int paranthesis_loc;
+
+    // get S(start)0 (sim start) and all program data
+    while( input != "A(end)0" )
+    {
+        // after getline, string looks like this: "S(start)0"
+        fin >> std::ws;
+        std::getline(fin, input, ';');
+        paranthesis_loc = input.find(')');
+
+        // construct Operation object
+        operation.type = input.front();        
+        operation.description = input.substr(2, paranthesis_loc-2);
+        operation.duration = std::stoi(
+            std::string( input.begin()+paranthesis_loc+1, input.end()) 
+        );
+
+        // insert operation into queue
+        program_->add_operation(operation);
+    }
+
+    // get S(end)0 (simulator end)
+    fin >> std::ws;
+    std::getline(fin, input, '.');
+    paranthesis_loc = input.find(')');
+
+    // construct Operation object
+    operation.type = input.front();
+    operation.description = input.substr(2, paranthesis_loc-2);
+    operation.duration = std::stoi(
+        std::string( input.begin()+paranthesis_loc+1, input.end()) 
+    );
+
+    // insert operation into queue
+    program_->add_operation(operation);
+
+    // make sure the last line of the file is correct
+    fin >> std::ws;
+    std::getline(fin, input, '.');
+    if( input != "End Program Meta-Data Code" )
+    {
+        throw std::runtime_error( "Error: Incorrect meta-data file format" );
     }
 
     fin.close();

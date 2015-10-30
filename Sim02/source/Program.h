@@ -24,14 +24,15 @@ struct Operation
 class Program
 {
 public:
-    Program( const std::string meta_data_file_path );
+    Program();
     ~Program();
+    void add_operation( Operation operation );
+
     /* Queue containing all program operations */
     std::queue<Operation> operations;
 
 private:
-    // fills queue with program's operations
-    void load_meta_data( const std::string file_path );        
+     
 };
 
 #endif // PROGRAM_H

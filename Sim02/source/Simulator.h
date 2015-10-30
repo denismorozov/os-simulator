@@ -46,6 +46,9 @@ private:
     // Loads all config info (used by constructor)
     void load_config( const std::string file_path );
 
+    // fills queue with program's operations
+    void load_meta_data( const std::string file_path );  
+
     // Program object used to store each program's information
     Program *program_ = nullptr;
 
