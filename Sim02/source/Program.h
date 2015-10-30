@@ -12,6 +12,11 @@
 #include <stdexcept>
 #include <queue>
 
+enum State
+{
+    START, READY, RUNNING, EXIT
+};
+    
 /* Model of program operations, such as processing and I/O */
 struct Operation
 {
@@ -31,11 +36,6 @@ public:
 
     /* Queue containing all program operations */
     std::queue<Operation> operations;
-
-    enum State
-    {
-        START, READY, RUNNING, EXIT
-    };
 
     State state = START;
     int running_time = 0;

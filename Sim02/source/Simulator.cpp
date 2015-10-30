@@ -43,14 +43,32 @@ void Simulator::run()
     start_ = std::chrono::system_clock::now();
     print("Simulator program starting");
 
-    // If FIFO
-    for( Program program : programs_ )
+    // First In First Out scheduling
+    if( scheduling_code_ == "FIFO" )
     {
-        while( program.operations.size() != 0)
+        print("OS: preparing all processes");
+        for( Program program : programs_ )
         {
-            process_operation( program.operations.front() );
-            program.operations.pop();
+            program.state = READY;
         }
+
+        for( Program program : programs_ )
+        {
+            print("OS: selecting next process");
+            program.state = RUNNING;
+            while( program.operations.size() != 0)
+            {
+                process_operation( program.operations.front() );
+                program.operations.pop();
+            }
+            program.state = EXIT;
+        }
+    }
+
+    // Shortest Job First or Shortest Remaining Time First - Non Preemptive
+    else
+    {
+
     }
 
     print("Simulator program ending");
@@ -66,7 +84,6 @@ void Simulator::process_operation( const Operation &operation )
     {
         if( operation.description == "start" )
         {
-            print("OS: preparing process 1");
             print("OS: starting process 1");
         }
         else
@@ -196,7 +213,7 @@ void Simulator::load_config( const std::string file_path )
         throw std::runtime_error( "Error: Incorrect config file format" );
     }
 
-    // only interested in ignoring everything up to the ':' 
+    // ignoring everything up to the ':' 
     auto limit = std::numeric_limits<std::streamsize>::max();
     fin.ignore( limit, ':' );
 
@@ -212,6 +229,15 @@ void Simulator::load_config( const std::string file_path )
     // get the rest of the data from the config file
     fin >> meta_data_file_path_;
     fin.ignore( limit, ':' );
+
+    fin >> scheduling_code_;
+    fin.ignore( limit, ':' );
+    if( scheduling_code_ != "FIFO" &&
+        scheduling_code_ != "SJF" &&
+        scheduling_code_ != "SRTF-N" )
+    {
+        throw std::runtime_error( "Error: Unrecognized scheduling code" );
+    }
 
     fin >> processor_cycle_time_;
     fin.ignore( limit, ':' );
@@ -288,12 +314,13 @@ void Simulator::load_meta_data( const std::string file_path )
     Operation operation;
     int paranthesis_loc;
 
+
     while( fin.peek() != 'S' )
     {
         Program newProgram;
 
         // Get all program data
-        while( input != "A(end)0" )
+        do
         {
             // after getline, string looks like this: "A(start)0"   
             std::getline(fin, input, ';');
@@ -311,7 +338,7 @@ void Simulator::load_meta_data( const std::string file_path )
 
             // eat whitespace
             fin >> std::ws;
-        }
+        } while( input != "A(end)0" );
 
         // insert the complete program into list of programs
         programs_.push_back(newProgram);

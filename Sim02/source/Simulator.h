@@ -62,8 +62,9 @@ private:
     std::ofstream fout_;
 
     // Simulator config data, variables declared in the same order as config file
-    const float simulator_version_ = 1.0;
+    const float simulator_version_ = 2.0;
     std::string meta_data_file_path_;
+    std::string scheduling_code_;
     int processor_cycle_time_;
     int monitor_display_time_;
     int hard_drive_cycle_time_;
