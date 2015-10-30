@@ -18,6 +18,7 @@ struct Operation
     char type; // S (OS), A (Program), P (Processing), I (Input), or O (Output)
     std::string description; // end, hard drive, keyboard, monitor, run, or start
     int duration; // cycles
+
 };
 
 /* Models a program which the OS can load and run */
@@ -30,6 +31,14 @@ public:
 
     /* Queue containing all program operations */
     std::queue<Operation> operations;
+
+    enum State
+    {
+        START, READY, RUNNING, EXIT
+    };
+
+    State state = START;
+    int running_time = 0;
 
 private:
      

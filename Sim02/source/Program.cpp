@@ -19,6 +19,7 @@ Program::Program()
 void Program::add_operation( Operation operation )
 {
     operations.push(operation);
+    running_time += operation.duration;
 }
 
 Program::~Program()
