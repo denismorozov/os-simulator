@@ -12,6 +12,7 @@
 #include <stdexcept>
 #include <queue>
 
+/* Possible PCB states */
 enum State
 {
     START, READY, RUNNING, EXIT
@@ -32,19 +33,26 @@ class Program
 public:
     Program();
     ~Program();
+
+    /* Set */
     void add_operation( Operation operation );
 
-    /* Queue containing all program operations */
-    std::queue<Operation> operations;
+    /* Get */
+    bool done() const;
+    Operation next(); // pops queue
+    int remaining_time() const;
+    int remaining_operations() const;
 
-    State state = START;
-    int running_time = 0;
-    int id = 0;
-
+    /* Overloaded operator for comparisons */
     bool operator>( const Program &other ) const;
 
+    /* Public members */        
+    State state = START; // Current program state
+    int id = 0; // ID of program, != 0 if program already started
+
 private:
-     
+    std::queue<Operation> operations_; // Queue containing all program operations
+    int remaining_time_ = 0; // Remaining running time of program
 };
 
 #endif // PROGRAM_H

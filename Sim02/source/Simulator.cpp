@@ -62,17 +62,17 @@ void Simulator::run()
             program.id = program_counter;            
             program.state = RUNNING;
 
-            while( !program.operations.empty() )
+            while( !program.done() )
             {
-                process_operation( program.operations.front(), program_counter );
-                program.operations.pop();
+                process_operation( program.next(), program.id );
             }
 
             program.state = EXIT;
         }
     }
 
-    // Shortest Job First or Shortest Remaining Time First - Non Preemptive
+    // Shortest Remaining Time First - Non Preemptive
+    // Also satisfies Shortest Job First
     else
     {
         print("OS: preparing all processes");
@@ -87,7 +87,7 @@ void Simulator::run()
         {
             print("OS: selecting next process");
 
-            // remove process with shortest remaining time from queue
+            // remove program with shortest remaining time from queue
             Program program = SRTF_queue_.top();
             SRTF_queue_.pop();
 
@@ -98,19 +98,19 @@ void Simulator::run()
                 program.id = program_counter;
             }
 
-            process_operation( program.operations.front(), program.id );
-            program.running_time -= program.operations.front().duration;
-            program.operations.pop();
+            program.state = RUNNING;
+            process_operation( program.next(), program.id );
 
-            if( program.operations.size() == 1 )
+            if( program.remaining_operations() == 1 )
             {
-                assert( program.running_time == 0 );
-                process_operation( program.operations.front(), program.id );
-                program.operations.pop();
+                assert( program.remaining_time() == 0 );
+                process_operation( program.next(), program.id );
+                program.state = EXIT;
             }
 
             else
             {
+                program.state = READY;
                 SRTF_queue_.push( program );
             }
         }
