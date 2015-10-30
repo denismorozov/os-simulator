@@ -39,7 +39,7 @@ int main(const int argc, char const *argv[])
     // Catch unfixable errors, e.g. file not found
     catch( ... )
     {
-        std::cerr << "Exiting program" << std::endl;
+        std::cerr << "Exiting program due to error" << std::endl;
         return EXIT_FAILURE;
     }
 
