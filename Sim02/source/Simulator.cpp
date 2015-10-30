@@ -64,7 +64,7 @@ void Simulator::run()
 
             while( !program.done() )
             {
-                process_operation( program.next(), program.id );
+                process_operation( program );
             }
 
             program.state = EXIT;
@@ -88,10 +88,11 @@ void Simulator::run()
             print("OS: selecting next process");
 
             // remove program with shortest remaining time from queue
-            Program program = SRTF_queue_.top();
+            Program program = SRTF_queue_.top(); 
             SRTF_queue_.pop();
 
-            // simple way of telling whether the program ran before
+            // simple way of telling whether the program ran before (so id
+            // doesn't get changed)
             if( program.id == 0 )
             {
                 program_counter++;
@@ -99,12 +100,10 @@ void Simulator::run()
             }
 
             program.state = RUNNING;
-            process_operation( program.next(), program.id );
+            process_operation( program );
 
-            if( program.remaining_operations() == 1 )
+            if( program.done() )
             {
-                assert( program.remaining_time() == 0 );
-                process_operation( program.next(), program.id );
                 program.state = EXIT;
             }
 
@@ -122,23 +121,21 @@ void Simulator::run()
 /* Process program operations. Create a thread for each I/O operation.
 * @param operation = current operation that is being processed
 */
-void Simulator::process_operation( const Operation &operation, const int program_id )
+void Simulator::process_operation( Program &program )
 {
-    // Program operation 
-    if( operation.type == 'A' )
+    const int program_id = program.id;
+    Operation operation = program.next();
+
+    // If the process is just starting, announce then go on to printing first operation
+    if( operation.type == 'A' && operation.description == "start" )
     {
-        if( operation.description == "start" )
-        {
-            print("OS: starting process " + std::to_string(program_id));
-        }
-        else
-        {
-            print("OS: removing process " + std::to_string(program_id));
-        }
+        print("OS: starting process " + std::to_string(program_id));
+        operation = program.next();
     }
 
+
     // Processing operation
-    else if( operation.type == 'P' )
+    if( operation.type == 'P' )
     {
         print("Process " + std::to_string(program_id) + ": start processing action");
         std::this_thread::sleep_for(
@@ -161,6 +158,14 @@ void Simulator::process_operation( const Operation &operation, const int program
         {
             IO_thread.join();
         }
+    }
+
+
+    // if only one operation remains, it must be the program end announcement
+    if( program.remaining_operations() == 1 )
+    {
+        program.next(); // just to pop the last item off
+        print("OS: removing process " + std::to_string(program_id));
     }
 }
 

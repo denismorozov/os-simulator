@@ -33,7 +33,7 @@ public:
 private:
 
     // Helper function that processes each individual program operation
-    void process_operation( const Operation & operation, const int program_id );
+    void process_operation( Program &program );
 
     // Helper function that deals with IO, created in a new thread
     void process_IO( const Operation& operation, const int program_id );
