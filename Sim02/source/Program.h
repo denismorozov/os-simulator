@@ -51,8 +51,11 @@ public:
     int id = 0; // ID of program, != 0 if program already started
 
 private:
-    std::queue<Operation> operations_; // Queue containing all program operations
-    int remaining_time_ = 0; // Remaining running time of program
+    // Queue containing all program operations
+    std::queue<Operation> operations_; 
+    
+    // Remaining running time of program
+    int remaining_time_ = 0; 
 };
 
 #endif // PROGRAM_H

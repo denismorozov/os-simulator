@@ -36,7 +36,7 @@ Simulator::~Simulator()
     }
 }
 
-/* Go through all the operations in the program's queue
+/* Run the simulator and all its programs
 */
 void Simulator::run()
 {
@@ -119,7 +119,7 @@ void Simulator::run()
 }
 
 /* Process program operations. Create a thread for each I/O operation.
-* @param operation = current operation that is being processed
+* @param program = current program that is being processed
 */
 void Simulator::process_operation( Program &program )
 {
@@ -171,6 +171,7 @@ void Simulator::process_operation( Program &program )
 
 /* Process I/O operation. This function is always called in a separate thread
 * @param operation = current operation that is being processed
+* @param program_id = id of current program for printing
 */
 void Simulator::process_IO( const Operation& operation, const int program_id )
 {

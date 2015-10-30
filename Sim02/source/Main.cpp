@@ -1,8 +1,8 @@
-/* Sim01
+/* Sim02
 *
 * Filename: Main.cpp
 *
-* Description: This operating system simulator runs a single program. Simulator
+* Description: This operating system simulator runs a batch of program. Simulator
 * settings are specified in the configuration file.
 *
 * Compilation: Use the provided makefile.
@@ -10,7 +10,7 @@
 *
 * Usage: The executable requires the configuration file as a command line 
 * argument.
-*   $ ./sim01 config_file.cnf
+*   $ ./sim02 config_file.cnf
 */
 
 /* Dependencies */
