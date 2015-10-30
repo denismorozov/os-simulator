@@ -1,6 +1,6 @@
 CC = g++
-LFLAGS = -std=c++14 -Wall -pthread
-CFLAGS = -std=c++14 -Wall -pthread -c
+LFLAGS = -std=c++11 -Wall -pthread
+CFLAGS = -std=c++11 -Wall -pthread -c
 OBJS = Main.o Simulator.o Program.o
 
 sim01: $(OBJS)
@@ -16,4 +16,4 @@ Program.o: Program.cpp Program.h
 	$(CC) $(CFLAGS) Program.cpp
 
 clean:
-	\rm sim01 *.o
+	\rm sim02 *.o
