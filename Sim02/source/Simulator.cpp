@@ -11,7 +11,6 @@ Simulator::Simulator( const std::string file_path )
     try
     {
         load_config( file_path );
-        program_ = new Program();
         load_meta_data( meta_data_file_path_ );
     }
     catch( const std::runtime_error& e )
@@ -31,11 +30,6 @@ Simulator::Simulator( const std::string file_path )
 
 Simulator::~Simulator()
 {
-    if(program_ != nullptr)
-    {
-        delete program_;
-    }
-
     if(fout_.is_open())
     {
         fout_.close();
@@ -46,14 +40,17 @@ Simulator::~Simulator()
 */
 void Simulator::run()
 {
-
     start_ = std::chrono::system_clock::now();
     print("Simulator program starting");
 
-    while( program_->operations.size() != 0)
+    // If FIFO
+    for( Program program : programs_ )
     {
-        process_operation( program_->operations.front() );
-        program_->operations.pop();
+        while( program.operations.size() != 0)
+        {
+            process_operation( program.operations.front() );
+            program.operations.pop();
+        }
     }
 
     print("Simulator program ending");
@@ -281,47 +278,60 @@ void Simulator::load_meta_data( const std::string file_path )
 
     // make sure the beginning of the file is correct
     std::getline(fin, input, ';');
+    fin >> std::ws;
     if( input != "Start Program Meta-Data Code:\nS(start)0" )
     {
-        throw std::runtime_error( "Error: Incorrect meta-data file format" );
+        throw std::runtime_error( "Error: Incorrect meta-data file format: \
+            Simulator start flag is missing" );
     }
 
     Operation operation;
     int paranthesis_loc;
 
-    // Get all program data
-    while( input != "A(end)0" )
+    while( fin.peek() != 'S' )
     {
-        // after getline, string looks like this: "S(start)0"
-        fin >> std::ws;
-        std::getline(fin, input, ';');
-        paranthesis_loc = input.find(')');
+        Program newProgram;
 
-        // construct Operation object
-        operation.type = input.front();        
-        operation.description = input.substr(2, paranthesis_loc-2);
-        operation.duration = std::stoi(
-            std::string( input.begin()+paranthesis_loc+1, input.end()) 
-        );
+        // Get all program data
+        while( input != "A(end)0" )
+        {
+            // after getline, string looks like this: "A(start)0"   
+            std::getline(fin, input, ';');
+            paranthesis_loc = input.find(')');
 
-        // insert operation into queue
-        program_->add_operation(operation);
+            // construct Operation object
+            operation.type = input.front();        
+            operation.description = input.substr(2, paranthesis_loc-2);
+            operation.duration = std::stoi(
+                std::string( input.begin()+paranthesis_loc+1, input.end()) 
+            );
+
+            // insert operation into queue
+            newProgram.add_operation(operation);
+
+            // eat whitespace
+            fin >> std::ws;
+        }
+
+        // insert the complete program into list of programs
+        programs_.push_back(newProgram);
     }
 
     // Make sure the simulator end flag is there
-    fin >> std::ws;
     std::getline(fin, input, '.');
+    fin >> std::ws;
     if( input != "S(end)0" )
     {
-        throw std::runtime_error( "Error: Incorrect meta-data file format" );
+        throw std::runtime_error( "Error: Incorrect meta-data file format: \
+            Simulator end flag is missing" );
     }
 
     // make sure the last line of the file is correct
-    fin >> std::ws;
     std::getline(fin, input, '.');
     if( input != "End Program Meta-Data Code" )
     {
-        throw std::runtime_error( "Error: Incorrect meta-data file format" );
+        throw std::runtime_error( "Error: Incorrect meta-data file format: \
+            Meta-Data file does not end after simulator operations end" );
     }
 
     fin.close();

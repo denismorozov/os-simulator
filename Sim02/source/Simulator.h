@@ -50,7 +50,7 @@ private:
     void load_meta_data( const std::string file_path );  
 
     // Program object used to store each program's information
-    Program *program_ = nullptr;
+    std::vector<Program> programs_;
 
     // Declaration of enum for possible simulator output locations
     enum LogLocation
