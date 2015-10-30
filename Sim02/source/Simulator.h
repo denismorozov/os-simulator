@@ -52,7 +52,7 @@ private:
 
     // Program object used to store each program's information
     std::vector<Program> programs_;
-    std::priority_queue<Program> SRTF_queue_;
+    std::priority_queue<Program, std::vector<Program>, std::greater<Program>> SRTF_queue_;
 
     // Declaration of enum for possible simulator output locations
     enum LogLocation

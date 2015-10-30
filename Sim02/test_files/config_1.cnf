@@ -1,6 +1,6 @@
 Start Simulator Configuration File
 Version/Phase: 2.0
-File Path: Test_5.mdf
+File Path: ../test_files/Test_5.mdf
 CPU Scheduling Code: FIFO
 Processor cycle time (msec): 10
 Monitor display time (msec): 20

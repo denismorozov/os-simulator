@@ -26,7 +26,7 @@ void Program::add_operation( Operation operation )
     running_time += operation.duration;
 }
 
-bool Program::operator<( const Program &other ) const
+bool Program::operator>( const Program &other ) const
 {
-    return running_time < other.running_time;
+    return running_time > other.running_time;
 }
