@@ -1,4 +1,4 @@
-#include "Simulator.h"
+#include "simulator.h"
 
 /* Constructor for the Simulator class
 * Loads the config file for the simulator, if no problems occured then it

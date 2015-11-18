@@ -17,7 +17,7 @@
 #include <thread>
 #include <queue>
 
-#include "Program.h"
+#include "program.h"
 
 /* OS Simulator. Loads a configuration file and a program to run */
 class Simulator
@@ -31,6 +31,8 @@ public:
     void run();
 
 private:
+
+    /*** Helper functions ***/
 
     // Helper function that processes each individual program operation
     void process_operation( Program &program );
@@ -54,11 +56,8 @@ private:
     std::vector<Program> programs_;
     std::priority_queue<Program, std::vector<Program>, std::greater<Program>> SRTF_queue_;
 
-    // Declaration of enum for possible simulator output locations
-    enum LogLocation
-    { 
-        SCREEN, FILE, BOTH 
-    };
+    // enum for possible simulator output locations
+
 
     // File output object used by print() if log_location_ is set to FILE or BOTH
     std::ofstream fout_;
@@ -72,6 +71,10 @@ private:
     int hard_drive_cycle_time_;
     int printer_cycle_time_;
     int keyboard_cycle_time_;
+    enum LogLocation
+    { 
+        SCREEN, FILE, BOTH 
+    };
     LogLocation log_location_;
     std::string log_file_path_;
 

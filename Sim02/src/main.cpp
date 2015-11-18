@@ -15,7 +15,7 @@
 
 /* Dependencies */
 #include <iostream>
-#include "Simulator.h"
+#include "simulator.h"
 
 /* Main */
 int main(const int argc, char const *argv[])
