@@ -23,8 +23,7 @@ struct Operation
 {
     char type; // S (OS), A (Program), P (Processing), I (Input), or O (Output)
     std::string description; // end, hard drive, keyboard, monitor, run, or start
-    int duration; // cycles
-
+    int cycles; // cycles
 };
 
 /* Models a program which the OS can load and run */

@@ -15,7 +15,7 @@ Program::~Program()
 void Program::add_operation( Operation new_operation )
 {
     operations_.push(new_operation);
-    remaining_time_ += new_operation.duration;
+    remaining_time_ += new_operation.cycles;
 }
 
 /* Returns true if all operations were completed
@@ -33,7 +33,7 @@ Operation Program::next()
 {
     Operation next_operation = operations_.front();
     operations_.pop();
-    remaining_time_ -= next_operation.duration;
+    remaining_time_ -= next_operation.cycles;
 
     return next_operation;
 }
