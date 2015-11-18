@@ -1,7 +1,7 @@
 # Executable
 sim01
 sim02
-a.out
+generator
 
 # Object files
 *.o

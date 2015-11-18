@@ -15,8 +15,9 @@ simulator.o: src/simulator.cpp src/simulator.h src/program.h
 program.o: src/program.cpp src/program.h
 	$(CC) $(CFLAGS) src/program.cpp
 
-clean:
-	\rm sim02 *.o
+generator:
+	$(CC) src/program_generator.cpp -o generator
 
-cleano:
-	\rm *.o
+clean:
+	\rm sim02 generator *.o
+
