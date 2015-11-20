@@ -61,10 +61,3 @@ int Program::remaining_operations() const
 {
     return operations_.size();
 }
-
-/* comparison operator so the programs can be used in a priority queue
-*/
-bool Program::operator>( const Program &other ) const
-{
-    return remaining_time() > other.remaining_time();
-}

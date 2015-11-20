@@ -36,6 +36,131 @@ Simulator::~Simulator()
     }
 }
 
+// Specialized run_helper for RR; needed because queue uses front() and p_queue uses top()
+template<>
+void Simulator::run_helper<std::queue<Program>>()
+{
+    std::unique_ptr<std::queue<Program>> readyQueue(new std::queue<Program>);
+
+    // load programs into queue, setting them to ready
+    print("OS: preparing all processes");
+    for( Program program : programs_ )
+    {
+        program.state = READY;
+        readyQueue->push(program);
+    }
+
+    // process programs in the ready queue
+    int programCounter = 0;
+    while( !readyQueue->empty() )
+    {
+        // process all interrupts
+        while( !interrupts_.empty() )
+        {
+            Interrupt interrupt = interrupts_.front();
+            interrupts_.pop();
+
+            if( interrupt.processID != 0 )
+            {
+                Program blockedProgram = blockedPrograms_.at( interrupt.processID );
+                blockedPrograms_.erase( interrupt.processID );  
+
+                blockedProgram.state = READY;                              
+                readyQueue->push( blockedProgram );
+            }
+        }
+
+        // select next program
+        print("OS: selecting next process");
+        Program currentProgram = readyQueue->front();
+        readyQueue->pop();
+
+        // simple way of telling whether the program ran before (so ID can be set w/o overwriting)
+        if( currentProgram.id == 0 )
+        {
+            programCounter++;
+            currentProgram.id = programCounter;
+        }
+
+        currentProgram.state = RUNNING;
+        process_operation( currentProgram );
+
+        if( currentProgram.done() )
+        {
+            currentProgram.state = EXIT;
+        }
+
+        else // if the program isn't done put it back in the ready queue
+        {
+            currentProgram.state = READY;
+            readyQueue->push( currentProgram );
+        }
+    }
+}
+
+template<typename QueueType>
+void Simulator::run_helper()
+{
+    int programCounter = 0;
+    std::unique_ptr<QueueType> readyQueue(new QueueType);
+
+    // load programs into queue, setting them to ready
+    print("OS: preparing all processes");
+    for( Program program : programs_ )
+    {
+        program.state = READY;
+        if( schedulingCode_ != "SRTF-P")
+        {
+            program.id = ++programCounter;
+        }
+        readyQueue->push(program);
+    }
+
+    // process programs in the ready queue
+    while( !readyQueue->empty() )
+    {
+        while( !interrupts_.empty() )
+        {
+            Interrupt interrupt = interrupts_.front();
+            interrupts_.pop();
+
+            if( interrupt.processID != 0 )
+            {
+                Program blockedProgram = blockedPrograms_.at( interrupt.processID );
+                blockedPrograms_.erase( interrupt.processID );  
+        
+                blockedProgram.state = READY;                              
+                readyQueue->push( blockedProgram );
+            }
+        }
+
+        // select next program
+        print("OS: selecting next process");
+        Program currentProgram = readyQueue->top();
+        readyQueue->pop();
+
+        // simple way of telling whether the program ran before (so ID can be set w/o overwriting)
+        if( schedulingCode_ == "SRTF-P" && currentProgram.id == 0 )
+        {
+            currentProgram.id = ++programCounter;
+        }
+
+        currentProgram.state = RUNNING;
+        process_operation( currentProgram );
+
+        if( currentProgram.done() )
+        {
+            currentProgram.state = EXIT;
+        }
+
+        else // if the program isn't done put it back in the ready queue
+        {
+            currentProgram.state = READY;
+            readyQueue->push( currentProgram );
+        }
+    }
+}
+
 /* Run the simulator and all its programs
 */
 void Simulator::run()
@@ -44,75 +169,18 @@ void Simulator::run()
     start_ = std::chrono::system_clock::now();
     print("Simulator program starting");  
 
-    // First In First Out scheduling
-    if( schedulingCode_ == "FIFO" )
-    {
-        print("OS: preparing all processes");
-        for( Program program : programs_ )
-        {
-            program.state = READY;
-        }
-
-        int programCounter = 0;
-        for( Program program : programs_ )
-        {
-            print("OS: selecting next process");
-            programCounter++;
-
-            program.id = programCounter;            
-            program.state = RUNNING;
-
-            while( !program.done() )
-            {
-                process_operation( program );
-            }
-
-            program.state = EXIT;
-        }
+    // Run with the proper queue for the scheduling algorithm
+    if( schedulingCode_ == "FIFO-P" )
+    {   
+        run_helper<FIFO_Q>();
     }
-
-    // Shortest Remaining Time First - Non Preemptive
-    // Also satisfies Shortest Job First
-    else
+    else if( schedulingCode_ == "RR" )
     {
-        print("OS: preparing all processes");
-        for( Program program : programs_ )
-        {
-            program.state = READY;
-            SRTF_queue_.push(program);
-        }
-
-        int programCounter = 0;
-        while( !SRTF_queue_.empty() )
-        {
-            print("OS: selecting next process");
-
-            // remove program with shortest remaining time from queue
-            Program program = SRTF_queue_.top(); 
-            SRTF_queue_.pop();
-
-            // simple way of telling whether the program ran before (so id
-            // doesn't get changed)
-            if( program.id == 0 )
-            {
-                programCounter++;
-                program.id = programCounter;
-            }
-
-            program.state = RUNNING;
-            process_operation( program );
-
-            if( program.done() )
-            {
-                program.state = EXIT;
-            }
-
-            else
-            {
-                program.state = READY;
-                SRTF_queue_.push( program );
-            }
-        }
+        run_helper<RR_Q>();
+    }
+    else // SRTF-P
+    {
+        run_helper<SRTF_Q>();
     }
 
     print("Simulator program ending");
@@ -272,9 +340,9 @@ void Simulator::load_config( const std::string filePath )
             << "Warning: Wrong simulator version." << std::endl            
             << "Expected: " << simulatorVersion_ << std::endl
             << "Given: " <<  simVersion << std::endl
-            << "The only reason this doesn't end immediately end the program is because" << std::endl
-            << "the provided test configuration file has its version set to 2.0 instead of 3.0." 
-            << std::endl << std::endl;
+            << "The only reason this doesn't immediately end the program is because the provided \
+            test configuration file has its version set to 2.0 instead of 3.0." << std::endl 
+            << std::endl;
     }
     fin.ignore( limit, ':' );
 
@@ -284,9 +352,9 @@ void Simulator::load_config( const std::string filePath )
 
     fin >> schedulingCode_;
     fin.ignore( limit, ':' );
-    if( schedulingCode_ != "FIFO" &&
-        schedulingCode_ != "SJF" &&
-        schedulingCode_ != "SRTF-N" )
+    if( schedulingCode_ != "RR" &&
+        schedulingCode_ != "FIFO-P" &&
+        schedulingCode_ != "SRTF-P" )
     {
         throw std::runtime_error( "Error: Unrecognized scheduling code\n" );
     }

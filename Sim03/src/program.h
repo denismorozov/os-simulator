@@ -41,9 +41,6 @@ public:
     int remaining_time() const;
     int remaining_operations() const;
 
-    /* Overloaded operator for comparisons */
-    bool operator>( const Program &other ) const;
-
     /* Public members */        
     State state = START; // Current program state
     int id = 0; // ID of program, != 0 if program already started
