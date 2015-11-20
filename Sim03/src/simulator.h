@@ -12,6 +12,7 @@
 #include <fstream>
 #include <iostream>
 #include <limits>
+#include <map>
 #include <stdexcept>
 #include <string>
 #include <thread>
@@ -22,8 +23,9 @@
 
 /* OS Simulator. Loads a configuration file and a program to run */
 class Simulator
-{
+{    
 public:
+
     // Constructor loads the config file and initializes Program object
     Simulator( const std::string filePath );
     ~Simulator();
@@ -32,7 +34,6 @@ public:
     void run();
 
 private:
-
 
     /***** Helper functions *****/
 
@@ -57,13 +58,34 @@ private:
 
     /***** Structures *****/
 
-    // Program object used to store each program's information
+    // Incredibly simple "Interrupt"
+    struct Interrupt
+    {
+        Interrupt(int PID = 0) : processID(PID) {}
+        // if an interrupt has PID of 0 then it must have been a quantum interrupt
+        // otherwise, it is an I/O event of specified processID
+        int processID;
+    };
+
+    std::queue<Interrupt> interrupts_;
+
+    // All the program's information
     std::vector<Program> programs_;
-    std::priority_queue<Program, std::vector<Program>, std::greater<Program>> SRTF_queue_;
+
+    // Currently blocked programs
+    std::map<int,Program> blockedPrograms_;
+
+    using RR_Q = std::queue<Program>;
+    std::unique_ptr<RR_Q> RRQueue;
+
+    using FIFO_Q = std::priority_queue<Program, std::vector<Program>, std::greater<Program>>;
+    std::unique_ptr<FIFO_Q> FIFOQueue;
+
+    using SRTF_Q = std::priority_queue<Program, std::vector<Program>, std::greater<Program>>;
+    std::unique_ptr<SRTF_Q> SRTFQueue;
 
 
     /***** Simulator config data *****/
-
 
     //  variables declared in the same order as config file
     const float simulatorVersion_ = 3.0;
@@ -84,7 +106,6 @@ private:
 
 
     /***** Other simulator variables *****/
-
 
     // Time variable to keep track of the beginning of the simulation
     std::chrono::time_point<std::chrono::system_clock> start_;

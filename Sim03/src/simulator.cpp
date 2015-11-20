@@ -44,75 +44,47 @@ void Simulator::run()
     start_ = std::chrono::system_clock::now();
     print("Simulator program starting");  
 
-    // First In First Out scheduling
-    if( schedulingCode_ == "FIFO" )
-    {
-        print("OS: preparing all processes");
-        for( Program program : programs_ )
-        {
-            program.state = READY;
-        }
-
-        int programCounter = 0;
-        for( Program program : programs_ )
-        {
-            print("OS: selecting next process");
-            programCounter++;
-
-            program.id = programCounter;            
-            program.state = RUNNING;
-
-            while( !program.done() )
-            {
-                process_operation( program );
-            }
-
-            program.state = EXIT;
-        }
+    // Pick the proper queue for the scheduling algorithm
+    if( schedulingCode_ == "FIFO-P" )
+    {   
+        //FIFOQueue = new FIFO_Q;
     }
 
-    // Shortest Remaining Time First - Non Preemptive
-    // Also satisfies Shortest Job First
-    else
+    else if( schedulingCode_ == "RR" )
     {
-        print("OS: preparing all processes");
-        for( Program program : programs_ )
+        std::unique_ptr<RR_Q> temp(new RR_Q);
+        RRQueue = std::move(temp);
+    }
+
+    else // SRTF-P
+    {
+        //SRTFQueue = new SRTF_Q;
+    }
+
+    std::unique_ptr<RR_Q> readyQueue(std::move(RRQueue));
+
+    // load programs into queue, setting them to ready
+    print("OS: preparing all processes");
+    for( Program program : programs_ )
+    {
+        program.state = READY;
+        readyQueue->push(program);
+    }
+
+    while( !readyQueue->empty() )
+    {
+        if( !interrupts_.empty() )
         {
-            program.state = READY;
-            SRTF_queue_.push(program);
+            // process all the interrupts
+            // if i/o thread, then add the program back in here from the blocked map
+            // if quantum expired, just pop
         }
 
-        int programCounter = 0;
-        while( !SRTF_queue_.empty() )
-        {
-            print("OS: selecting next process");
+        print("OS: selecting next process");
+        Program currentProgram = readyQueue->top();
+        readyQueue->pop();
 
-            // remove program with shortest remaining time from queue
-            Program program = SRTF_queue_.top(); 
-            SRTF_queue_.pop();
-
-            // simple way of telling whether the program ran before (so id
-            // doesn't get changed)
-            if( program.id == 0 )
-            {
-                programCounter++;
-                program.id = programCounter;
-            }
-
-            program.state = RUNNING;
-            process_operation( program );
-
-            if( program.done() )
-            {
-                program.state = EXIT;
-            }
-
-            else
-            {
-                program.state = READY;
-                SRTF_queue_.push( program );
-            }
-        }
+        process_operation( currentProgram );
     }
 
     print("Simulator program ending");
