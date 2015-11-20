@@ -90,7 +90,7 @@ void Simulator::run_helper<std::queue<Program>>()
             currentProgram.state = EXIT;
         }
 
-        else // if the program isn't done put it back on the ready queue
+        else // if the program isn't done put it back in the ready queue
         {
             currentProgram.state = READY;
             readyQueue->push( currentProgram );
@@ -111,6 +111,8 @@ void Simulator::run_helper()
         readyQueue->push(program);
     }
 
+    // process programs in the ready queue
+    int programCounter = 0;
     while( !readyQueue->empty() )
     {
         while( !interrupts_.empty() )
@@ -128,11 +130,31 @@ void Simulator::run_helper()
             }
         }
 
+        // select next program
         print("OS: selecting next process");
         Program currentProgram = readyQueue->top();
         readyQueue->pop();
 
+        // simple way of telling whether the program ran before (so ID can be set w/o overwriting)
+        if( currentProgram.id == 0 )
+        {
+            programCounter++;
+            currentProgram.id = programCounter;
+        }
+
+        currentProgram.state = RUNNING;
         process_operation( currentProgram );
+
+        if( currentProgram.done() )
+        {
+            currentProgram.state = EXIT;
+        }
+
+        else // if the program isn't done put it back in the ready queue
+        {
+            currentProgram.state = READY;
+            readyQueue->push( currentProgram );
+        }
     }
 }
 
@@ -149,12 +171,10 @@ void Simulator::run()
     {   
         run_helper<FIFO_Q>();
     }
-
     else if( schedulingCode_ == "RR" )
     {
         run_helper<RR_Q>();
     }
-
     else // SRTF-P
     {
         run_helper<SRTF_Q>();

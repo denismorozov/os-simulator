@@ -85,7 +85,7 @@ private:
     };
     struct SRTFComparator{
         bool operator()( const Program &left, const Program &right ){
-            return left.remaining_time() < right.remaining_time();
+            return left.remaining_time() > right.remaining_time();
         }
     };
     using RR_Q = std::queue<Program>;

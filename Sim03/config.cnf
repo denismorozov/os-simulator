@@ -1,7 +1,7 @@
 Start Simulator Configuration File
 Version/Phase: 3.0
-File Path: test.mdf
-CPU Scheduling Code: RR
+File Path: test_files/Test_3.mdf
+CPU Scheduling Code: SRTF-P
 Quantum Time (cycles): 3
 Processor cycle time (msec): 10
 Monitor display time (msec): 20
