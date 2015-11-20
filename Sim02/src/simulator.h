@@ -17,6 +17,7 @@
 #include <thread>
 #include <queue>
 
+#include "operation.h"
 #include "program.h"
 
 /* OS Simulator. Loads a configuration file and a program to run */
@@ -50,14 +51,13 @@ private:
     void load_config( const std::string file_path );
 
     // fills queue with program's operations
-    void load_meta_data( const std::string file_path );  
+    void load_meta_data( const std::string file_path );
+    // helper function to get proper cycle time
+    void set_operation_cycle_time( Operation &operation );
 
     // Program object used to store each program's information
     std::vector<Program> programs_;
     std::priority_queue<Program, std::vector<Program>, std::greater<Program>> SRTF_queue_;
-
-    // enum for possible simulator output locations
-
 
     // File output object used by print() if log_location_ is set to FILE or BOTH
     std::ofstream fout_;
