@@ -10,7 +10,7 @@
 #include <iostream>
 #include <string>
 #include <stdexcept>
-#include <queue>
+#include <deque>
 
 #include "operation.h"
 
@@ -27,12 +27,14 @@ public:
     Program();
     ~Program();
 
-    /* Set */
+    /* Add a new operation to the back of the queue */
     void add_operation( Operation operation );
 
-    /* Get */
+    /* Pops next operation and returns it */
+    Operation next();
+
+    /* Information */
     bool done() const;
-    Operation next(); // pops queue
     int remaining_time() const;
     int remaining_operations() const;
 
@@ -45,7 +47,7 @@ public:
 
 private:
     // Queue containing all program operations
-    std::queue<Operation> operations_; 
+    std::deque<Operation> operations_; 
     
     // Remaining running time of program
     int remaining_program_time_ = 0; 
