@@ -59,7 +59,7 @@ void Simulator::run_helper<std::queue<Program>>(){
             {
                 Program blockedProgram = blockedPrograms_.at( interrupt.processID );
                 blockedPrograms_.erase( interrupt.processID );  
-        
+
                 blockedProgram.state = READY;                              
                 readyQueue->push( blockedProgram );
             }
@@ -292,9 +292,9 @@ void Simulator::load_config( const std::string filePath )
             << "Warning: Wrong simulator version." << std::endl            
             << "Expected: " << simulatorVersion_ << std::endl
             << "Given: " <<  simVersion << std::endl
-            << "The only reason this doesn't end immediately end the program is because" << std::endl
-            << "the provided test configuration file has its version set to 2.0 instead of 3.0." 
-            << std::endl << std::endl;
+            << "The only reason this doesn't immediately end the program is because the provided \
+            test configuration file has its version set to 2.0 instead of 3.0." << std::endl 
+            << std::endl;
     }
     fin.ignore( limit, ':' );
 
@@ -304,9 +304,9 @@ void Simulator::load_config( const std::string filePath )
 
     fin >> schedulingCode_;
     fin.ignore( limit, ':' );
-    if( schedulingCode_ != "FIFO" &&
-        schedulingCode_ != "SJF" &&
-        schedulingCode_ != "SRTF-N" )
+    if( schedulingCode_ != "RR" &&
+        schedulingCode_ != "FIFO-P" &&
+        schedulingCode_ != "SRTF-P" )
     {
         throw std::runtime_error( "Error: Unrecognized scheduling code\n" );
     }
