@@ -225,7 +225,8 @@ void Simulator::process_IO( const Operation& operation, const int programID )
 */
 void Simulator::print( const std::string message )
 {
-    auto time = elapsed_seconds().count();
+    std::chrono::duration<double> elapsedSeconds = std::chrono::system_clock::now()-start_;
+    auto time = elapsedSeconds.count();
     if( logLocation_ == BOTH || logLocation_ == SCREEN )
     {
         std::cout << std::fixed << time << " - " << message << std::endl;
@@ -234,14 +235,6 @@ void Simulator::print( const std::string message )
     {
         fout_ << std::fixed << time << " - " << message << std::endl;
     }    
-}
-
-/* Calculates elapsed time from the beginning of the simulation
-* @return Time difference
-*/
-std::chrono::duration<double> Simulator::elapsed_seconds()
-{
-    return std::chrono::system_clock::now()-start_;
 }
 
 /* Loads data from the config file

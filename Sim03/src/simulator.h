@@ -44,9 +44,6 @@ private:
     // Prints elapsed time and current OS action
     void print( const std::string message );
 
-    // Returns elapsed time, used by print
-    std::chrono::duration<double> elapsed_seconds();
-    
     // Loads all config info (used by constructor)
     void load_config( const std::string filePath );
 
