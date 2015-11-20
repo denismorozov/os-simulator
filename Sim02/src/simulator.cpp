@@ -139,7 +139,7 @@ void Simulator::process_operation( Program &program )
     {
         print("Process " + std::to_string(program_id) + ": start processing action");
         std::this_thread::sleep_for(
-            std::chrono::milliseconds( operation.cycles * processor_cycle_time_ )
+            std::chrono::milliseconds( operation.duration() );
         );
         print("Process " + std::to_string(program_id) + ": end processing action");
 
@@ -190,7 +190,7 @@ void Simulator::process_IO( const Operation& operation, const int program_id )
 
         print("Process " + std::to_string(program_id) + ": start hard drive " + access_type );
         std::this_thread::sleep_for(
-            std::chrono::milliseconds( operation.cycles * hard_drive_cycle_time_ )
+            std::chrono::milliseconds( operation.duration() )
         );
         print("Process " + std::to_string(program_id) + ": end hard drive " + access_type );
     }
@@ -198,7 +198,7 @@ void Simulator::process_IO( const Operation& operation, const int program_id )
     {
         print("Process " + std::to_string(program_id) + ": start keyboard input");
         std::this_thread::sleep_for(
-            std::chrono::milliseconds( operation.cycles * keyboard_cycle_time_)
+            std::chrono::milliseconds( operation.duration() )
         );
         print("Process " + std::to_string(program_id) + ": end keyboard input");
     }
@@ -206,7 +206,7 @@ void Simulator::process_IO( const Operation& operation, const int program_id )
     {
         print("Process " + std::to_string(program_id) + ": start monitor output");
         std::this_thread::sleep_for(
-            std::chrono::milliseconds( operation.cycles * monitor_display_time_ )
+            std::chrono::milliseconds( operation.duration() )
         ); 
         print("Process " + std::to_string(program_id) + ": end monitor output");           
     }
@@ -214,7 +214,7 @@ void Simulator::process_IO( const Operation& operation, const int program_id )
     {
         print("Process " + std::to_string(program_id) + ": start printer output");
         std::this_thread::sleep_for(
-            std::chrono::milliseconds( operation.cycles * printer_cycle_time_ )
+            std::chrono::milliseconds( operation.duration() )
         ); 
         print("Process " + std::to_string(program_id) + ": end printer output");               
     }

@@ -21,7 +21,7 @@ public:
 
     // status
     int cycles;
-    int duration = 0;
+    int duration = 0; // remaining cycles * time per cycle
 
     // Operation information
     char type; // S (OS), A (Program), P (Processing), I (Input), or O (Output)
