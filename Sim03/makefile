@@ -22,5 +22,5 @@ generator:
 	$(CC) src/program_generator.cpp -o generator
 
 clean:
-	\rm sim03 generator *.o
+	\rm -f sim03 generator *.o
 
