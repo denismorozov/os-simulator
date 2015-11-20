@@ -292,6 +292,9 @@ void Simulator::load_config( const std::string filePath )
         throw std::runtime_error( "Error: Unrecognized scheduling code\n" );
     }
 
+    fin >> quantum_;
+    fin.ignore( limit, ':' );
+
     fin >> processorCycleTime_;
     fin.ignore( limit, ':' );
 

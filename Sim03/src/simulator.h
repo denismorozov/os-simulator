@@ -66,6 +66,7 @@ private:
     const float simulatorVersion_ = 2.0;
     std::string metaDataFilePath_;
     std::string schedulingCode_;
+    int quantum_;
     int processorCycleTime_;
     int monitorDisplayTime_;
     int hardDriveCycleTime_;

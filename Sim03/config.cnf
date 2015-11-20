@@ -2,6 +2,7 @@ Start Simulator Configuration File
 Version/Phase: 2.0
 File Path: test.mdf
 CPU Scheduling Code: SRTF-N
+Quantum Time (cycles): 3
 Processor cycle time (msec): 10
 Monitor display time (msec): 20
 Hard drive cycle time (msec): 15
