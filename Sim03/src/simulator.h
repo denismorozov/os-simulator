@@ -25,7 +25,7 @@ class Simulator
 {
 public:
     // Constructor loads the config file and initializes Program object
-    Simulator( const std::string file_path );
+    Simulator( const std::string filePath );
     ~Simulator();
 
     // Runs the simulation
@@ -39,7 +39,7 @@ private:
     void process_operation( Program &program );
 
     // Helper function that deals with IO, created in a new thread
-    void process_IO( const Operation& operation, const int program_id );
+    void process_IO( const Operation& operation, const int programID );
 
     // Prints elapsed time and current OS action
     void print( const std::string message );
@@ -48,10 +48,10 @@ private:
     std::chrono::duration<double> elapsed_seconds();
     
     // Loads all config info (used by constructor)
-    void load_config( const std::string file_path );
+    void load_config( const std::string filePath );
 
     // fills queue with program's operations
-    void load_meta_data( const std::string file_path );
+    void load_meta_data( const std::string filePath );
     // helper function to get proper cycle time
     void set_operation_cycle_time( Operation &operation );
 
@@ -63,20 +63,20 @@ private:
     std::ofstream fout_;
 
     // Simulator config data, variables declared in the same order as config file
-    const float simulator_version_ = 2.0;
-    std::string meta_data_file_path_;
-    std::string scheduling_code_;
-    int processor_cycle_time_;
-    int monitor_display_time_;
-    int hard_drive_cycle_time_;
-    int printer_cycle_time_;
-    int keyboard_cycle_time_;
+    const float simulatorVersion_ = 2.0;
+    std::string metaDataFilePath_;
+    std::string schedulingCode_;
+    int processorCycleTime_;
+    int monitorDisplayTime_;
+    int hardDriveCycleTime_;
+    int printerCycleTime_;
+    int keyboardCycleTime_;
     enum LogLocation
     { 
         SCREEN, FILE, BOTH 
     };
-    LogLocation log_location_;
-    std::string log_file_path_;
+    LogLocation logLocation_;
+    std::string logFilePath_;
 
     // Time variables
     std::chrono::time_point<std::chrono::system_clock> start_;
