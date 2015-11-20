@@ -41,7 +41,7 @@ private:
     void run_helper();
 
     // Helper function that processes each individual program operation
-    void process_operation( Program &program );
+    void process_program( Program &program );
 
     // Helper function that deals with IO, created in a new thread
     void process_IO( const Operation& operation, const int programID );

@@ -83,7 +83,7 @@ void Simulator::run_helper<std::queue<Program>>()
         }
 
         currentProgram.state = RUNNING;
-        process_operation( currentProgram );
+        process_program( currentProgram );
 
         if( currentProgram.done() )
         {
@@ -104,7 +104,7 @@ void Simulator::run_helper()
     int programCounter = 0;
     std::unique_ptr<QueueType> readyQueue(new QueueType);
 
-    // load programs into queue, setting them to ready
+    // load programs into ready queue, setting them to ready
     print("OS: preparing all processes");
     for( Program program : programs_ )
     {
@@ -117,7 +117,7 @@ void Simulator::run_helper()
     }
 
     // process programs in the ready queue
-    while( !readyQueue->empty() )
+    while( !readyQueue->empty() || !blockedPrograms_.empty() )
     {
         while( !interrupts_.empty() )
         {
@@ -134,29 +134,34 @@ void Simulator::run_helper()
             }
         }
 
-        // select next program
-        print("OS: selecting next process");
-        Program currentProgram = readyQueue->top();
-        readyQueue->pop();
-
-        // simple way of telling whether the program ran before (so ID can be set w/o overwriting)
-        if( schedulingCode_ == "SRTF-P" && currentProgram.id == 0 )
+        if( !readyQueue->empty() )
         {
-            currentProgram.id = ++programCounter;
+            // select next program
+            print("OS: selecting next process");
+            Program currentProgram = readyQueue->top();
+            readyQueue->pop();
+
+            // simple way of telling whether the program ran before (so ID can be set w/o overwriting)
+            if( schedulingCode_ == "SRTF-P" && currentProgram.id == 0 )
+            {
+                currentProgram.id = ++programCounter;
+            }
+
+            process_program( currentProgram );
+
+            if( currentProgram.state == RUNNING )
+            {
+                currentProgram.state = READY;
+                readyQueue->push( currentProgram );
+            }
         }
 
-        currentProgram.state = RUNNING;
-        process_operation( currentProgram );
-
-        if( currentProgram.done() )
+        else
         {
-            currentProgram.state = EXIT;
-        }
-
-        else // if the program isn't done put it back in the ready queue
-        {
-            currentProgram.state = READY;
-            readyQueue->push( currentProgram );
+            print("OS Idle: Waiting for I/O to finish");
+            std::this_thread::sleep_for(
+                std::chrono::milliseconds( 20 )
+            ); 
         }
     }
 }
@@ -189,50 +194,67 @@ void Simulator::run()
 /* Process program operations. Create a thread for each I/O operation.
 * @param program = current program that is being processed
 */
-void Simulator::process_operation( Program &program )
+void Simulator::process_program( Program &program )
 {
+    program.state = RUNNING;
     const int programID = program.id;
+
     Operation operation = program.next();
 
-    // If the process is just starting, announce then go on to printing first operation
+    // If the process is just starting, announce then go on to processing first operation
     if( operation.type == 'A' && operation.description == "start" )
     {
         print("OS: starting process " + std::to_string(programID));
         operation = program.next();
     }
 
-
-    // Processing operation
-    if( operation.type == 'P' )
-    {
-        print("Process " + std::to_string(programID) + ": start processing action");
-        std::this_thread::sleep_for(
-            std::chrono::milliseconds( operation.duration )
-        );
-        print("Process " + std::to_string(programID) + ": end processing action");
-
-    }
-
     // Input/Output operation
-    else if( operation.type == 'I' || operation.type == 'O' )
+    if( operation.type == 'I' || operation.type == 'O' )
     {
+        print("Process " + std::to_string(programID) + ": starting I/O");
         // create a thread for any I/O operation
         std::thread IO_thread( [this, operation, programID](){
             process_IO(operation, programID);
         });
+        IO_thread.detach();
 
-        // wait for IO to finish execution
-        if( IO_thread.joinable() )
+        program.state = BLOCKED;
+        blockedPrograms_[program.id] = program;
+    }
+
+    // Processing operation
+    else if( operation.type == 'P' )
+    {
+        print("Process " + std::to_string(programID) + ": processing action");
+        int quantumCounter = 0;
+        while( !operation.done() && interrupts_.empty() )
         {
-            IO_thread.join();
+            quantumCounter++;
+
+            std::this_thread::sleep_for(
+                std::chrono::milliseconds( operation.run() )
+            );
+            
+            if(quantumCounter == quantum_)
+            {
+                interrupts_.push(Interrupt());
+                print("Interrupt: quantum expired");
+            }
+        }
+
+        if( operation.done() )
+        {
+            print("Process " + std::to_string(programID) + ": end processing action");            
+        }
+        else
+        {
+            program.return_operation(operation);
         }
     }
 
-
-    // if only one operation remains, it must be the program end announcement
-    if( program.remaining_operations() == 1 )
+    if( program.remaining_operations() <= 1 && program.state != BLOCKED )
     {
-        program.next(); // just to pop the last item off
+        program.state = EXIT;
         print("OS: removing process " + std::to_string(programID));
     }
 }
@@ -256,36 +278,38 @@ void Simulator::process_IO( const Operation& operation, const int programID )
             accessType = "output";
         }
 
-        print("Process " + std::to_string(programID) + ": start hard drive " + accessType );
+        print("I/O: Process " + std::to_string(programID) + ": start hard drive " + accessType );
         std::this_thread::sleep_for(
             std::chrono::milliseconds( operation.duration )
         );
-        print("Process " + std::to_string(programID) + ": end hard drive " + accessType );
+        print("Interrupt: Process " + std::to_string(programID) + ": end hard drive " + accessType );
     }
     else if( operation.description == "keyboard" )
     {
-        print("Process " + std::to_string(programID) + ": start keyboard input");
+        print("I/O: Process " + std::to_string(programID) + ": start keyboard input");
         std::this_thread::sleep_for(
             std::chrono::milliseconds( operation.duration )
         );
-        print("Process " + std::to_string(programID) + ": end keyboard input");
+        print("Interrupt: Process " + std::to_string(programID) + ": end keyboard input");
     }
     else if( operation.description == "monitor" )
     {
-        print("Process " + std::to_string(programID) + ": start monitor output");
+        print("I/O: Process " + std::to_string(programID) + ": start monitor output");
         std::this_thread::sleep_for(
             std::chrono::milliseconds( operation.duration )
         ); 
-        print("Process " + std::to_string(programID) + ": end monitor output");           
+        print("Interrupt: Process " + std::to_string(programID) + ": end monitor output");           
     }
     else if( operation.description == "printer" )
     {
-        print("Process " + std::to_string(programID) + ": start printer output");
+        print("I/O: Process " + std::to_string(programID) + ": start printer output");
         std::this_thread::sleep_for(
             std::chrono::milliseconds( operation.duration )
         ); 
-        print("Process " + std::to_string(programID) + ": end printer output");               
+        print("Interrupt: Process " + std::to_string(programID) + ": end printer output");               
     }
+    
+    interrupts_.push(Interrupt( programID ));
 }
 
 /* Prints OS action to file, screen, or both, with elapsed time
