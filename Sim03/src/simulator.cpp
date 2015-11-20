@@ -101,6 +101,7 @@ void Simulator::run_helper<std::queue<Program>>()
 template<typename QueueType>
 void Simulator::run_helper()
 {
+    int programCounter = 0;
     std::unique_ptr<QueueType> readyQueue(new QueueType);
 
     // load programs into queue, setting them to ready
@@ -108,11 +109,14 @@ void Simulator::run_helper()
     for( Program program : programs_ )
     {
         program.state = READY;
+        if( schedulingCode_ != "SRTF-P")
+        {
+            program.id = ++programCounter;
+        }
         readyQueue->push(program);
     }
 
     // process programs in the ready queue
-    int programCounter = 0;
     while( !readyQueue->empty() )
     {
         while( !interrupts_.empty() )
@@ -136,10 +140,9 @@ void Simulator::run_helper()
         readyQueue->pop();
 
         // simple way of telling whether the program ran before (so ID can be set w/o overwriting)
-        if( currentProgram.id == 0 )
+        if( schedulingCode_ == "SRTF-P" && currentProgram.id == 0 )
         {
-            programCounter++;
-            currentProgram.id = programCounter;
+            currentProgram.id = ++programCounter;
         }
 
         currentProgram.state = RUNNING;

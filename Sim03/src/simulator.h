@@ -80,7 +80,7 @@ private:
     // Scheduling
     struct FIFOComparator{
         bool operator()( const Program &left, const Program &right ){
-            return left.id < right.id;
+            return left.id > right.id;
         }
     };
     struct SRTFComparator{
