@@ -33,7 +33,8 @@ public:
 
 private:
 
-    /*** Helper functions ***/
+
+    /***** Helper functions *****/
 
     // Helper function that processes each individual program operation
     void process_operation( Program &program );
@@ -49,17 +50,22 @@ private:
 
     // fills queue with program's operations
     void load_meta_data( const std::string filePath );
+
     // helper function to get proper cycle time
     void set_operation_cycle_time( Operation &operation );
+
+
+    /***** Structures *****/
 
     // Program object used to store each program's information
     std::vector<Program> programs_;
     std::priority_queue<Program, std::vector<Program>, std::greater<Program>> SRTF_queue_;
 
-    // File output object used by print() if log_location_ is set to FILE or BOTH
-    std::ofstream fout_;
 
-    // Simulator config data, variables declared in the same order as config file
+    /***** Simulator config data *****/
+
+
+    //  variables declared in the same order as config file
     const float simulatorVersion_ = 3.0;
     std::string metaDataFilePath_;
     std::string schedulingCode_;
@@ -76,8 +82,15 @@ private:
     LogLocation logLocation_;
     std::string logFilePath_;
 
-    // Time variables
+
+    /***** Other simulator variables *****/
+
+
+    // Time variable to keep track of the beginning of the simulation
     std::chrono::time_point<std::chrono::system_clock> start_;
+
+    // File output object used by print() if log_location_ is set to FILE or BOTH
+    std::ofstream fout_;
 };
 
 #endif // SIMULATOR_H
