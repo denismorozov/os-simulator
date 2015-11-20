@@ -1,6 +1,7 @@
 # Executable
 sim01
 sim02
+generator
 
 # Object files
 *.o

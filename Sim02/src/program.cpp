@@ -1,4 +1,4 @@
-#include "Program.h"
+#include "program.h"
 
 
 Program::Program()
@@ -14,8 +14,9 @@ Program::~Program()
 */
 void Program::add_operation( Operation new_operation )
 {
-    operations_.push(new_operation);
-    remaining_time_ += new_operation.duration;
+    new_operation.duration = new_operation.cycle_time * new_operation.cycles;
+    operations_.push(new_operation);    
+    remaining_program_time_ += new_operation.duration;
 }
 
 /* Returns true if all operations were completed
@@ -33,8 +34,7 @@ Operation Program::next()
 {
     Operation next_operation = operations_.front();
     operations_.pop();
-    remaining_time_ -= next_operation.duration;
-
+    remaining_program_time_ -= next_operation.duration;
     return next_operation;
 }
 
@@ -42,7 +42,7 @@ Operation Program::next()
 */
 int Program::remaining_time() const
 {
-    return remaining_time_;
+    return remaining_program_time_;
 }
 
 /* remaining number of operations getter
@@ -56,5 +56,5 @@ int Program::remaining_operations() const
 */
 bool Program::operator>( const Program &other ) const
 {
-    return remaining_time_ > other.remaining_time();
+    return remaining_time() > other.remaining_time();
 }

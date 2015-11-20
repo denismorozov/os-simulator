@@ -1,4 +1,4 @@
-#include "Simulator.h"
+#include "simulator.h"
 
 /* Constructor for the Simulator class
 * Loads the config file for the simulator, if no problems occured then it
@@ -139,7 +139,7 @@ void Simulator::process_operation( Program &program )
     {
         print("Process " + std::to_string(program_id) + ": start processing action");
         std::this_thread::sleep_for(
-            std::chrono::milliseconds( operation.duration * processor_cycle_time_ )
+            std::chrono::milliseconds( operation.duration() );
         );
         print("Process " + std::to_string(program_id) + ": end processing action");
 
@@ -190,7 +190,7 @@ void Simulator::process_IO( const Operation& operation, const int program_id )
 
         print("Process " + std::to_string(program_id) + ": start hard drive " + access_type );
         std::this_thread::sleep_for(
-            std::chrono::milliseconds( operation.duration * hard_drive_cycle_time_ )
+            std::chrono::milliseconds( operation.duration() )
         );
         print("Process " + std::to_string(program_id) + ": end hard drive " + access_type );
     }
@@ -198,7 +198,7 @@ void Simulator::process_IO( const Operation& operation, const int program_id )
     {
         print("Process " + std::to_string(program_id) + ": start keyboard input");
         std::this_thread::sleep_for(
-            std::chrono::milliseconds( operation.duration * keyboard_cycle_time_)
+            std::chrono::milliseconds( operation.duration() )
         );
         print("Process " + std::to_string(program_id) + ": end keyboard input");
     }
@@ -206,7 +206,7 @@ void Simulator::process_IO( const Operation& operation, const int program_id )
     {
         print("Process " + std::to_string(program_id) + ": start monitor output");
         std::this_thread::sleep_for(
-            std::chrono::milliseconds( operation.duration * monitor_display_time_ )
+            std::chrono::milliseconds( operation.duration() )
         ); 
         print("Process " + std::to_string(program_id) + ": end monitor output");           
     }
@@ -214,7 +214,7 @@ void Simulator::process_IO( const Operation& operation, const int program_id )
     {
         print("Process " + std::to_string(program_id) + ": start printer output");
         std::this_thread::sleep_for(
-            std::chrono::milliseconds( operation.duration * printer_cycle_time_ )
+            std::chrono::milliseconds( operation.duration() )
         ); 
         print("Process " + std::to_string(program_id) + ": end printer output");               
     }
@@ -379,12 +379,15 @@ void Simulator::load_meta_data( const std::string file_path )
             std::getline(fin, input, ';');
             paranthesis_loc = input.find(')');
 
-            // construct Operation object
+            // parsing Operation object
             operation.type = input.front();        
             operation.description = input.substr(2, paranthesis_loc-2);
-            operation.duration = std::stoi(
+            operation.cycles = std::stoi(
                 std::string( input.begin()+paranthesis_loc+1, input.end()) 
             );
+
+            // find and set cycle time of the operation
+            set_operation_cycle_time(operation);
 
             // insert operation into queue
             newProgram.add_operation(operation);
@@ -415,4 +418,42 @@ void Simulator::load_meta_data( const std::string file_path )
     }
 
     fin.close();
+}
+
+void Simulator::set_operation_cycle_time( Operation &operation )
+{
+    if( operation.type == 'P' )
+    {
+        operation.cycle_time = processor_cycle_time_;
+    }
+
+    else if( operation.type == 'I' || operation.type == 'O' )
+    {
+        if( operation.description == "hard drive" )
+        {
+            operation.cycle_time = hard_drive_cycle_time_;
+        }
+        
+        else if( operation.description == "keyboard" )
+        {
+            operation.cycle_time = keyboard_cycle_time_;
+        }
+        else if( operation.description == "monitor" )
+        {
+            operation.cycle_time = monitor_display_time_;
+        }
+
+        else if( operation.description == "printer" )
+        {
+            operation.cycle_time = printer_cycle_time_;
+        }
+    }
+
+    else if( operation.type == 'A' || operation.type == 'S' )
+    {
+        operation.cycle_time = 0;
+    }
+
+    else throw std::runtime_error( "Error: Unrecognized operation type, \
+        check meta-data file" );
 }

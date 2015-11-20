@@ -1,6 +1,6 @@
 /*
 * Filename: Program.h
-* Specifications for the Program and Operation objects. 
+* Specifications for the Program object. Represents a Process Control Block.
 */
 
 #ifndef PROGRAM_H
@@ -12,21 +12,14 @@
 #include <stdexcept>
 #include <queue>
 
+#include "operation.h"
+
 /* Possible PCB states */
 enum State
 {
-    START, READY, RUNNING, EXIT
+    START, BLOCKED, READY, RUNNING, EXIT
 };
     
-/* Model of program operations, such as processing and I/O */
-struct Operation
-{
-    char type; // S (OS), A (Program), P (Processing), I (Input), or O (Output)
-    std::string description; // end, hard drive, keyboard, monitor, run, or start
-    int duration; // cycles
-
-};
-
 /* Models a program which the OS can load and run */
 class Program
 {
@@ -55,7 +48,7 @@ private:
     std::queue<Operation> operations_; 
     
     // Remaining running time of program
-    int remaining_time_ = 0; 
+    int remaining_program_time_ = 0; 
 };
 
 #endif // PROGRAM_H
