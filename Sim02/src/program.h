@@ -17,7 +17,7 @@
 /* Possible PCB states */
 enum State
 {
-    START, READY, RUNNING, EXIT
+    START, BLOCKED, READY, RUNNING, EXIT
 };
     
 /* Models a program which the OS can load and run */
@@ -48,7 +48,7 @@ private:
     std::queue<Operation> operations_; 
     
     // Remaining running time of program
-    int remaining_time_ = 0; 
+    int remaining_program_time_ = 0; 
 };
 
 #endif // PROGRAM_H
