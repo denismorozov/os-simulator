@@ -6,12 +6,12 @@
 * output file if needed, and sets precision of double/float outputs
 * @param file path for configuration file
 */
-Simulator::Simulator( const std::string file_path )
+Simulator::Simulator( const std::string filePath )
 {
     try
     {
-        load_config( file_path );
-        load_meta_data( meta_data_file_path_ );
+        load_config( filePath );
+        load_meta_data( metaDataFilePath_ );
     }
     catch( const std::runtime_error& e )
     {
@@ -22,9 +22,9 @@ Simulator::Simulator( const std::string file_path )
 
     std::cout.precision(6); // precision for printing doubles/floats
 
-    if( log_location_ == BOTH || log_location_ == FILE )
+    if( logLocation_ == BOTH || logLocation_ == FILE )
     {
-        fout_.open( log_file_path_ );
+        fout_.open( logFilePath_ );
     }
 }
 
@@ -45,7 +45,7 @@ void Simulator::run()
     print("Simulator program starting");  
 
     // First In First Out scheduling
-    if( scheduling_code_ == "FIFO" )
+    if( schedulingCode_ == "FIFO" )
     {
         print("OS: preparing all processes");
         for( Program program : programs_ )
@@ -53,13 +53,13 @@ void Simulator::run()
             program.state = READY;
         }
 
-        int program_counter = 0;
+        int programCounter = 0;
         for( Program program : programs_ )
         {
             print("OS: selecting next process");
-            program_counter++;
+            programCounter++;
 
-            program.id = program_counter;            
+            program.id = programCounter;            
             program.state = RUNNING;
 
             while( !program.done() )
@@ -82,7 +82,7 @@ void Simulator::run()
             SRTF_queue_.push(program);
         }
 
-        int program_counter = 0;
+        int programCounter = 0;
         while( !SRTF_queue_.empty() )
         {
             print("OS: selecting next process");
@@ -95,8 +95,8 @@ void Simulator::run()
             // doesn't get changed)
             if( program.id == 0 )
             {
-                program_counter++;
-                program.id = program_counter;
+                programCounter++;
+                program.id = programCounter;
             }
 
             program.state = RUNNING;
@@ -123,13 +123,13 @@ void Simulator::run()
 */
 void Simulator::process_operation( Program &program )
 {
-    const int program_id = program.id;
+    const int programID = program.id;
     Operation operation = program.next();
 
     // If the process is just starting, announce then go on to printing first operation
     if( operation.type == 'A' && operation.description == "start" )
     {
-        print("OS: starting process " + std::to_string(program_id));
+        print("OS: starting process " + std::to_string(programID));
         operation = program.next();
     }
 
@@ -137,11 +137,11 @@ void Simulator::process_operation( Program &program )
     // Processing operation
     if( operation.type == 'P' )
     {
-        print("Process " + std::to_string(program_id) + ": start processing action");
+        print("Process " + std::to_string(programID) + ": start processing action");
         std::this_thread::sleep_for(
             std::chrono::milliseconds( operation.duration )
         );
-        print("Process " + std::to_string(program_id) + ": end processing action");
+        print("Process " + std::to_string(programID) + ": end processing action");
 
     }
 
@@ -149,8 +149,8 @@ void Simulator::process_operation( Program &program )
     else if( operation.type == 'I' || operation.type == 'O' )
     {
         // create a thread for any I/O operation
-        std::thread IO_thread( [this, operation, program_id](){
-            process_IO(operation, program_id);
+        std::thread IO_thread( [this, operation, programID](){
+            process_IO(operation, programID);
         });
 
         // wait for IO to finish execution
@@ -165,58 +165,58 @@ void Simulator::process_operation( Program &program )
     if( program.remaining_operations() == 1 )
     {
         program.next(); // just to pop the last item off
-        print("OS: removing process " + std::to_string(program_id));
+        print("OS: removing process " + std::to_string(programID));
     }
 }
 
 /* Process I/O operation. This function is always called in a separate thread
 * @param operation = current operation that is being processed
-* @param program_id = id of current program for printing
+* @param programID = id of current program for printing
 */
-void Simulator::process_IO( const Operation& operation, const int program_id )
+void Simulator::process_IO( const Operation& operation, const int programID )
 {
     if( operation.description == "hard drive" )
     {
-        std::string access_type;
+        std::string accessType;
         if( operation.type == 'I' )
         {
-            access_type = "input";
+            accessType = "input";
         }
 
         else
         {
-            access_type = "output";
+            accessType = "output";
         }
 
-        print("Process " + std::to_string(program_id) + ": start hard drive " + access_type );
+        print("Process " + std::to_string(programID) + ": start hard drive " + accessType );
         std::this_thread::sleep_for(
             std::chrono::milliseconds( operation.duration )
         );
-        print("Process " + std::to_string(program_id) + ": end hard drive " + access_type );
+        print("Process " + std::to_string(programID) + ": end hard drive " + accessType );
     }
     else if( operation.description == "keyboard" )
     {
-        print("Process " + std::to_string(program_id) + ": start keyboard input");
+        print("Process " + std::to_string(programID) + ": start keyboard input");
         std::this_thread::sleep_for(
             std::chrono::milliseconds( operation.duration )
         );
-        print("Process " + std::to_string(program_id) + ": end keyboard input");
+        print("Process " + std::to_string(programID) + ": end keyboard input");
     }
     else if( operation.description == "monitor" )
     {
-        print("Process " + std::to_string(program_id) + ": start monitor output");
+        print("Process " + std::to_string(programID) + ": start monitor output");
         std::this_thread::sleep_for(
             std::chrono::milliseconds( operation.duration )
         ); 
-        print("Process " + std::to_string(program_id) + ": end monitor output");           
+        print("Process " + std::to_string(programID) + ": end monitor output");           
     }
     else if( operation.description == "printer" )
     {
-        print("Process " + std::to_string(program_id) + ": start printer output");
+        print("Process " + std::to_string(programID) + ": start printer output");
         std::this_thread::sleep_for(
             std::chrono::milliseconds( operation.duration )
         ); 
-        print("Process " + std::to_string(program_id) + ": end printer output");               
+        print("Process " + std::to_string(programID) + ": end printer output");               
     }
 }
 
@@ -226,11 +226,11 @@ void Simulator::process_IO( const Operation& operation, const int program_id )
 void Simulator::print( const std::string message )
 {
     auto time = elapsed_seconds().count();
-    if( log_location_ == BOTH || log_location_ == SCREEN )
+    if( logLocation_ == BOTH || logLocation_ == SCREEN )
     {
         std::cout << std::fixed << time << " - " << message << std::endl;
     }
-    if( log_location_ == BOTH || log_location_ == FILE )
+    if( logLocation_ == BOTH || logLocation_ == FILE )
     {
         fout_ << std::fixed << time << " - " << message << std::endl;
     }    
@@ -248,20 +248,20 @@ std::chrono::duration<double> Simulator::elapsed_seconds()
 * @param Path to config file
 * @except Throws exception if file wasn't found or file format isn't correct
 */
-void Simulator::load_config( const std::string file_path )
+void Simulator::load_config( const std::string filePath )
 {
     // attempt opening the file
-    std::ifstream fin( file_path, std::ifstream::in );
+    std::ifstream fin( filePath, std::ifstream::in );
     if(!fin)
     {
-        std::string error = "Error: Unable to open file " + file_path + "\n";
+        std::string error = "Error: Unable to open file " + filePath + "\n";
         throw std::runtime_error( error );
     }
 
     // make sure the first line of the config file is correct
-    std::string config_format_line;
-    std::getline(fin, config_format_line, '\n');
-    if( config_format_line != "Start Simulator Configuration File" )
+    std::string configFormatLine;
+    std::getline(fin, configFormatLine, '\n');
+    if( configFormatLine != "Start Simulator Configuration File" )
     {
         throw std::runtime_error( "Error: Incorrect config file format\n" );
     }
@@ -271,66 +271,66 @@ void Simulator::load_config( const std::string file_path )
     fin.ignore( limit, ':' );
 
     // make sure the configuration file is for the correct simulator version
-    float sim_version;
-    fin >> sim_version;
-    if( sim_version != simulator_version_ )
+    float simVersion_;
+    fin >> simVersion_;
+    if( simVersion_ != simulatorVersion_ )
     {
         throw std::runtime_error( "Error: Wrong simulator version\n" );
     }
     fin.ignore( limit, ':' );
 
     // get the rest of the data from the config file
-    fin >> meta_data_file_path_;
+    fin >> metaDataFilePath_;
     fin.ignore( limit, ':' );
 
-    fin >> scheduling_code_;
+    fin >> schedulingCode_;
     fin.ignore( limit, ':' );
-    if( scheduling_code_ != "FIFO" &&
-        scheduling_code_ != "SJF" &&
-        scheduling_code_ != "SRTF-N" )
+    if( schedulingCode_ != "FIFO" &&
+        schedulingCode_ != "SJF" &&
+        schedulingCode_ != "SRTF-N" )
     {
         throw std::runtime_error( "Error: Unrecognized scheduling code\n" );
     }
 
-    fin >> processor_cycle_time_;
+    fin >> processorCycleTime_;
     fin.ignore( limit, ':' );
 
-    fin >> monitor_display_time_;
+    fin >> monitorDisplayTime_;
     fin.ignore( limit, ':' );
 
-    fin >> hard_drive_cycle_time_;
+    fin >> hardDriveCycleTime_;
     fin.ignore( limit, ':' );
 
-    fin >> printer_cycle_time_;
+    fin >> printerCycleTime_;
     fin.ignore( limit, ':' );
 
-    fin >> keyboard_cycle_time_;
+    fin >> keyboardCycleTime_;
     fin.ignore( limit, ':' );
 
-    std::string log_string;
+    std::string logString;
     fin >> std::ws; // ignore the space after :
-    std::getline(fin, log_string, '\n');
+    std::getline(fin, logString, '\n');
 
     // transform the log location to enum for easier processing later
-    if( log_string == "Log to Both")
+    if( logString == "Log to Both")
     {
-        log_location_ = BOTH;
+        logLocation_ = BOTH;
     }
-    else if( log_string == "Log to File" )
+    else if( logString == "Log to File" )
     {
-        log_location_ = FILE;
+        logLocation_ = FILE;
     }
     else
     {
-        log_location_ = SCREEN;
+        logLocation_ = SCREEN;
     }
     fin.ignore( limit, ':' );
 
-    fin >> log_file_path_;
+    fin >> logFilePath_;
 
     // make sure the config file ends here
-    fin >> config_format_line;
-    if( config_format_line != "End" )
+    fin >> configFormatLine;
+    if( configFormatLine != "End" )
     {
         throw std::runtime_error( "Error: Incorrect config file format\n" );
     }
@@ -341,17 +341,17 @@ void Simulator::load_config( const std::string file_path )
 /* Loads each operation specified in the meta-data file into queue 
 * @param file path for the meta data file
 */
-void Simulator::load_meta_data( const std::string file_path )
+void Simulator::load_meta_data( const std::string filePath )
 {
 
     // string object that's used throughout this function
     std::string input;
 
     // attempt opening the file
-    std::ifstream fin( file_path, std::ifstream::in );
+    std::ifstream fin( filePath, std::ifstream::in );
     if(!fin)
     {
-        std::string error = "Error: Unable to open file " + file_path + "\n";
+        std::string error = "Error: Unable to open file " + filePath + "\n";
         throw std::runtime_error( error );
     }
 
@@ -365,7 +365,7 @@ void Simulator::load_meta_data( const std::string file_path )
     }
 
     Operation operation;
-    int paranthesis_loc;
+    int paranthesisLocation;
 
 
     while( fin.peek() != 'S' )
@@ -377,13 +377,13 @@ void Simulator::load_meta_data( const std::string file_path )
         {
             // after getline, string looks like this: "A(start)0"   
             std::getline(fin, input, ';');
-            paranthesis_loc = input.find(')');
+            paranthesisLocation = input.find(')');
 
             // parsing Operation object
             operation.type = input.front();        
-            operation.description = input.substr(2, paranthesis_loc-2);
+            operation.description = input.substr(2, paranthesisLocation-2);
             operation.cycles = std::stoi(
-                std::string( input.begin()+paranthesis_loc+1, input.end()) 
+                std::string( input.begin()+paranthesisLocation+1, input.end()) 
             );
 
             // find and set cycle time of the operation
@@ -424,34 +424,34 @@ void Simulator::set_operation_cycle_time( Operation &operation )
 {
     if( operation.type == 'P' )
     {
-        operation.cycle_time = processor_cycle_time_;
+        operation.cycleTime = processorCycleTime_;
     }
 
     else if( operation.type == 'I' || operation.type == 'O' )
     {
         if( operation.description == "hard drive" )
         {
-            operation.cycle_time = hard_drive_cycle_time_;
+            operation.cycleTime = hardDriveCycleTime_;
         }
         
         else if( operation.description == "keyboard" )
         {
-            operation.cycle_time = keyboard_cycle_time_;
+            operation.cycleTime = keyboardCycleTime_;
         }
         else if( operation.description == "monitor" )
         {
-            operation.cycle_time = monitor_display_time_;
+            operation.cycleTime = monitorDisplayTime_;
         }
 
         else if( operation.description == "printer" )
         {
-            operation.cycle_time = printer_cycle_time_;
+            operation.cycleTime = printerCycleTime_;
         }
     }
 
     else if( operation.type == 'A' || operation.type == 'S' )
     {
-        operation.cycle_time = 0;
+        operation.cycleTime = 0;
     }
 
     else throw std::runtime_error( "Error: Unrecognized operation type, \

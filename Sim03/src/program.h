@@ -53,7 +53,7 @@ private:
     std::deque<Operation> operations_; 
     
     // Remaining running time of program
-    int remaining_program_time_ = 0; 
+    int remainingProgramTime_ = 0; 
 };
 
 #endif // PROGRAM_H

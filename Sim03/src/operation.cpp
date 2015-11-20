@@ -7,9 +7,9 @@
 */ 
 int Operation::run()
 {
-    duration -= cycle_time;
+    duration -= cycleTime;
     cycles--;
-    return cycle_time;
+    return cycleTime;
 }
 
 /* Operation done executing?

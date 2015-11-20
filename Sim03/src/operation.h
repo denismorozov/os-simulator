@@ -26,7 +26,7 @@ public:
     // Operation information
     char type; // S (OS), A (Program), P (Processing), I (Input), or O (Output)
     std::string description; // end, hard drive, keyboard, monitor, run, printer, or start
-    int cycle_time;
+    int cycleTime;
 };
 
 #endif // OPERATION_H

@@ -12,11 +12,11 @@ Program::~Program()
 /* Add an operation to queue, updating remaining time
 * @param operation to be added to queue
 */
-void Program::add_operation( Operation new_operation )
+void Program::add_operation( Operation newOperation )
 {
-    new_operation.duration = new_operation.cycle_time * new_operation.cycles;
-    operations_.push_back(new_operation);    
-    remaining_program_time_ += new_operation.duration;
+    newOperation.duration = newOperation.cycleTime * newOperation.cycles;
+    operations_.push_back(newOperation);    
+    remainingProgramTime_ += newOperation.duration;
 }
 
 /* Add an earlier operation to the front of operation queue
@@ -26,7 +26,7 @@ void Program::add_operation( Operation new_operation )
 void Program::return_operation( Operation operation )
 {
     operations_.push_front(operation);
-    remaining_program_time_ += operation.duration;
+    remainingProgramTime_ += operation.duration;
 }
 
 /* Returns true if all operations were completed
@@ -42,17 +42,17 @@ bool Program::done() const
 */
 Operation Program::next()
 {
-    Operation next_operation = operations_.front();
+    Operation nextOperation = operations_.front();
     operations_.pop_front();
-    remaining_program_time_ -= next_operation.duration;
-    return next_operation;
+    remainingProgramTime_ -= nextOperation.duration;
+    return nextOperation;
 }
 
 /* remaining time getter
 */
 int Program::remaining_time() const
 {
-    return remaining_program_time_;
+    return remainingProgramTime_;
 }
 
 /* remaining number of operations getter
