@@ -35,12 +35,6 @@ public:
 
 private:
 
-    using RR_Q = std::queue<Program>;
-
-    using FIFO_Q = std::priority_queue<Program, std::vector<Program>, std::greater<Program>>;
-
-    using SRTF_Q = std::priority_queue<Program, std::vector<Program>, std::greater<Program>>;
-
     /***** Helper functions *****/
 
     template<typename QueueType>
@@ -75,14 +69,28 @@ private:
         // otherwise, it is an I/O event of specified processID
         int processID;
     };
-
     std::queue<Interrupt> interrupts_;
 
     // All the program's information
     std::vector<Program> programs_;
 
     // Currently blocked programs
-    std::map<int,Program> blockedPrograms_;    
+    std::map<int,Program> blockedPrograms_; 
+
+    // Scheduling
+    struct FIFOComparator{
+        bool operator()( const Program &left, const Program &right ){
+            return left.id < right.id;
+        }
+    };
+    struct SRTFComparator{
+        bool operator()( const Program &left, const Program &right ){
+            return left.remaining_time() < right.remaining_time();
+        }
+    };
+    using RR_Q = std::queue<Program>;
+    using FIFO_Q = std::priority_queue<Program, std::vector<Program>, FIFOComparator>;
+    using SRTF_Q = std::priority_queue<Program, std::vector<Program>, SRTFComparator>;   
 
 
     /***** Simulator config data *****/
