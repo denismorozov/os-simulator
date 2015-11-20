@@ -264,11 +264,17 @@ void Simulator::load_config( const std::string filePath )
     fin.ignore( limit, ':' );
 
     // make sure the configuration file is for the correct simulator version
-    float simVersion_;
-    fin >> simVersion_;
-    if( simVersion_ != simulatorVersion_ )
+    float simVersion;
+    fin >> simVersion;
+    if( simVersion != simulatorVersion_ )
     {
-        throw std::runtime_error( "Error: Wrong simulator version\n" );
+        std::cerr << std::endl 
+            << "Warning: Wrong simulator version." << std::endl            
+            << "Expected: " << simulatorVersion_ << std::endl
+            << "Given: " <<  simVersion << std::endl
+            << "The only reason this doesn't end immediately end the program is because" << std::endl
+            << "the provided test configuration file has its version set to 2.0 instead of 3.0." 
+            << std::endl << std::endl;
     }
     fin.ignore( limit, ':' );
 

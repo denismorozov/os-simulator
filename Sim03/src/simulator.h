@@ -60,7 +60,7 @@ private:
     std::ofstream fout_;
 
     // Simulator config data, variables declared in the same order as config file
-    const float simulatorVersion_ = 2.0;
+    const float simulatorVersion_ = 3.0;
     std::string metaDataFilePath_;
     std::string schedulingCode_;
     int quantum_;
