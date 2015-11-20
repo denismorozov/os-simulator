@@ -36,32 +36,9 @@ Simulator::~Simulator()
     }
 }
 
-/* Run the simulator and all its programs
-*/
-void Simulator::run()
-{
-    // Announce beginning of sim and set starting time point
-    start_ = std::chrono::system_clock::now();
-    print("Simulator program starting");  
-
-    // Pick the proper queue for the scheduling algorithm
-    if( schedulingCode_ == "FIFO-P" )
-    {   
-        //FIFOQueue = new FIFO_Q;
-    }
-
-    else if( schedulingCode_ == "RR" )
-    {
-        std::unique_ptr<RR_Q> temp(new RR_Q);
-        RRQueue = std::move(temp);
-    }
-
-    else // SRTF-P
-    {
-        //SRTFQueue = new SRTF_Q;
-    }
-
-    std::unique_ptr<RR_Q> readyQueue(std::move(RRQueue));
+template<>
+void Simulator::run_helper<std::queue<Program>>(){
+    std::unique_ptr<std::queue<Program>> readyQueue(new std::queue<Program>);
 
     // load programs into queue, setting them to ready
     print("OS: preparing all processes");
@@ -73,11 +50,57 @@ void Simulator::run()
 
     while( !readyQueue->empty() )
     {
-        if( !interrupts_.empty() )
+        while( !interrupts_.empty() )
         {
-            // process all the interrupts
-            // if i/o thread, then add the program back in here from the blocked map
-            // if quantum expired, just pop
+            Interrupt interrupt = interrupts_.front();
+            interrupts_.pop();
+
+            if( interrupt.processID != 0 )
+            {
+                Program blockedProgram = blockedPrograms_.at( interrupt.processID );
+                blockedPrograms_.erase( interrupt.processID );  
+        
+                blockedProgram.state = READY;                              
+                readyQueue->push( blockedProgram );
+            }
+        }
+
+        print("OS: selecting next process");
+        Program currentProgram = readyQueue->front();
+        readyQueue->pop();
+
+        process_operation( currentProgram );
+    }
+}
+
+template<typename QueueType>
+void Simulator::run_helper()
+{
+    std::unique_ptr<QueueType> readyQueue(new QueueType);
+
+    // load programs into queue, setting them to ready
+    print("OS: preparing all processes");
+    for( Program program : programs_ )
+    {
+        program.state = READY;
+        readyQueue->push(program);
+    }
+
+    while( !readyQueue->empty() )
+    {
+        while( !interrupts_.empty() )
+        {
+            Interrupt interrupt = interrupts_.front();
+            interrupts_.pop();
+
+            if( interrupt.processID != 0 )
+            {
+                Program blockedProgram = blockedPrograms_.at( interrupt.processID );
+                blockedPrograms_.erase( interrupt.processID );  
+        
+                blockedProgram.state = READY;                              
+                readyQueue->push( blockedProgram );
+            }
         }
 
         print("OS: selecting next process");
@@ -85,6 +108,31 @@ void Simulator::run()
         readyQueue->pop();
 
         process_operation( currentProgram );
+    }
+}
+
+/* Run the simulator and all its programs
+*/
+void Simulator::run()
+{
+    // Announce beginning of sim and set starting time point
+    start_ = std::chrono::system_clock::now();
+    print("Simulator program starting");  
+
+    // Run with the proper queue for the scheduling algorithm
+    if( schedulingCode_ == "FIFO-P" )
+    {   
+        run_helper<FIFO_Q>();
+    }
+
+    else if( schedulingCode_ == "RR" )
+    {
+        run_helper<RR_Q>();
+    }
+
+    else // SRTF-P
+    {
+        run_helper<SRTF_Q>();
     }
 
     print("Simulator program ending");

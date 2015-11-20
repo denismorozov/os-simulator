@@ -35,7 +35,16 @@ public:
 
 private:
 
+    using RR_Q = std::queue<Program>;
+
+    using FIFO_Q = std::priority_queue<Program, std::vector<Program>, std::greater<Program>>;
+
+    using SRTF_Q = std::priority_queue<Program, std::vector<Program>, std::greater<Program>>;
+
     /***** Helper functions *****/
+
+    template<typename QueueType>
+    void run_helper();
 
     // Helper function that processes each individual program operation
     void process_operation( Program &program );
@@ -73,16 +82,7 @@ private:
     std::vector<Program> programs_;
 
     // Currently blocked programs
-    std::map<int,Program> blockedPrograms_;
-
-    using RR_Q = std::queue<Program>;
-    std::unique_ptr<RR_Q> RRQueue;
-
-    using FIFO_Q = std::priority_queue<Program, std::vector<Program>, std::greater<Program>>;
-    std::unique_ptr<FIFO_Q> FIFOQueue;
-
-    using SRTF_Q = std::priority_queue<Program, std::vector<Program>, std::greater<Program>>;
-    std::unique_ptr<SRTF_Q> SRTFQueue;
+    std::map<int,Program> blockedPrograms_;    
 
 
     /***** Simulator config data *****/
