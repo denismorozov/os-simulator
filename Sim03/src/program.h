@@ -30,6 +30,9 @@ public:
     /* Add a new operation to the back of the queue */
     void add_operation( Operation operation );
 
+    /* Return operation to the front of the queue */
+    void return_operation( Operation operation );
+
     /* Pops next operation and returns it */
     Operation next();
 

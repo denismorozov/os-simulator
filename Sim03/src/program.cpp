@@ -19,6 +19,16 @@ void Program::add_operation( Operation new_operation )
     remaining_program_time_ += new_operation.duration;
 }
 
+/* Add an earlier operation to the front of operation queue
+* Needed for when an operation began running but then got interrupted
+* @param operation to be placed in front of queue
+*/
+void Program::return_operation( Operation operation )
+{
+    operations_.push_front(operation);
+    remaining_program_time_ += operation.duration;
+}
+
 /* Returns true if all operations were completed
 */
 bool Program::done() const
