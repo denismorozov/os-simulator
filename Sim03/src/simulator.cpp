@@ -36,25 +36,29 @@ Simulator::~Simulator()
     }
 }
 
-// Specialized run_helper for RR; needed because queue uses front() and p_queue uses top()
+// Specialized run_helper for RR; same as the general one;
+// needed because queue uses front() and p_queue uses top()
 template<>
 void Simulator::run_helper<std::queue<Program>>()
 {
+    int programCounter = 0;
     std::unique_ptr<std::queue<Program>> readyQueue(new std::queue<Program>);
 
-    // load programs into queue, setting them to ready
+    // load programs into ready queue, setting them to ready
     print("OS: preparing all processes");
     for( Program program : programs_ )
     {
         program.state = READY;
+        if( schedulingCode_ != "SRTF-P")
+        {
+            program.id = ++programCounter;
+        }
         readyQueue->push(program);
     }
 
     // process programs in the ready queue
-    int programCounter = 0;
-    while( !readyQueue->empty() )
+    while( !readyQueue->empty() || !blockedPrograms_.empty() )
     {
-        // process all interrupts
         while( !interrupts_.empty() )
         {
             Interrupt interrupt = interrupts_.front();
@@ -64,36 +68,40 @@ void Simulator::run_helper<std::queue<Program>>()
             {
                 Program blockedProgram = blockedPrograms_.at( interrupt.processID );
                 blockedPrograms_.erase( interrupt.processID );  
-
+        
                 blockedProgram.state = READY;                              
                 readyQueue->push( blockedProgram );
             }
         }
 
-        // select next program
-        print("OS: selecting next process");
-        Program currentProgram = readyQueue->front();
-        readyQueue->pop();
-
-        // simple way of telling whether the program ran before (so ID can be set w/o overwriting)
-        if( currentProgram.id == 0 )
+        if( !readyQueue->empty() )
         {
-            programCounter++;
-            currentProgram.id = programCounter;
+            // select next program
+            print("OS: selecting next process");
+            Program currentProgram = readyQueue->front();
+            readyQueue->pop();
+
+            // simple way of telling whether the program ran before (so ID can be set w/o overwriting)
+            if( schedulingCode_ == "SRTF-P" && currentProgram.id == 0 )
+            {
+                currentProgram.id = ++programCounter;
+            }
+
+            process_program( currentProgram );
+
+            if( currentProgram.state == RUNNING )
+            {
+                currentProgram.state = READY;
+                readyQueue->push( currentProgram );
+            }
         }
 
-        currentProgram.state = RUNNING;
-        process_program( currentProgram );
-
-        if( currentProgram.done() )
+        else
         {
-            currentProgram.state = EXIT;
-        }
-
-        else // if the program isn't done put it back in the ready queue
-        {
-            currentProgram.state = READY;
-            readyQueue->push( currentProgram );
+            print("OS Idle: Waiting for I/O to finish");
+            std::this_thread::sleep_for(
+                std::chrono::milliseconds( 20 )
+            ); 
         }
     }
 }
