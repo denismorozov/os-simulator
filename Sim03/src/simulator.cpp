@@ -36,8 +36,10 @@ Simulator::~Simulator()
     }
 }
 
+// Specialized run_helper for RR; needed because queue uses front() and p_queue uses top()
 template<>
-void Simulator::run_helper<std::queue<Program>>(){
+void Simulator::run_helper<std::queue<Program>>()
+{
     std::unique_ptr<std::queue<Program>> readyQueue(new std::queue<Program>);
 
     // load programs into queue, setting them to ready
@@ -48,8 +50,11 @@ void Simulator::run_helper<std::queue<Program>>(){
         readyQueue->push(program);
     }
 
+    // process programs in the ready queue
+    int programCounter = 0;
     while( !readyQueue->empty() )
     {
+        // process all interrupts
         while( !interrupts_.empty() )
         {
             Interrupt interrupt = interrupts_.front();
@@ -65,11 +70,31 @@ void Simulator::run_helper<std::queue<Program>>(){
             }
         }
 
+        // select next program
         print("OS: selecting next process");
         Program currentProgram = readyQueue->front();
         readyQueue->pop();
 
+        // simple way of telling whether the program ran before (so ID can be set w/o overwriting)
+        if( currentProgram.id == 0 )
+        {
+            programCounter++;
+            currentProgram.id = programCounter;
+        }
+
+        currentProgram.state = RUNNING;
         process_operation( currentProgram );
+
+        if( currentProgram.done() )
+        {
+            currentProgram.state = EXIT;
+        }
+
+        else // if the program isn't done put it back on the ready queue
+        {
+            currentProgram.state = READY;
+            readyQueue->push( currentProgram );
+        }
     }
 }
 
