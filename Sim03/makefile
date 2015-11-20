@@ -3,8 +3,8 @@ LFLAGS = -std=c++11 -Wall -pthread
 CFLAGS = -I. -std=c++11 -Wall -pthread -c
 OBJS = main.o simulator.o program.o operation.o
 
-sim02: $(OBJS)
-	$(CC) $(LFLAGS) $(OBJS) -o sim02
+sim03: $(OBJS)
+	$(CC) $(LFLAGS) $(OBJS) -o sim03
 
 main.o: src/main.cpp src/simulator.h src/program.h src/operation.h
 	$(CC) $(CFLAGS) src/main.cpp
@@ -22,5 +22,5 @@ generator:
 	$(CC) src/program_generator.cpp -o generator
 
 clean:
-	\rm sim02 generator *.o
+	\rm sim03 generator *.o
 
