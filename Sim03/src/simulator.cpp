@@ -238,48 +238,40 @@ void Simulator::process_program( Program &program )
 */
 void Simulator::process_IO( const Operation& operation, const int programID )
 {
+    std::string startMessage = "I/O: process " + std::to_string(programID) + " starting ";
+    std::string endMessage = "Interrupt: process "+ std::to_string(programID) + " done with ";
     if( operation.description == "hard drive" )
     {
-        std::string accessType;
-        if( operation.type == 'I' )
-        {
-            accessType = "input";
-        }
-
-        else
-        {
-            accessType = "output";
-        }
-
-        print("I/O: Process " + std::to_string(programID) + ": start hard drive " + accessType );
+        std::string accessType = operation.type == 'I' ? "input" : "output";
+        print(startMessage + "hard drive " + accessType );
         std::this_thread::sleep_for(
             std::chrono::milliseconds( operation.duration )
         );
-        print("Interrupt: Process " + std::to_string(programID) + ": end hard drive " + accessType );
+        print(endMessage + "hard drive " + accessType );
     }
     else if( operation.description == "keyboard" )
     {
-        print("I/O: Process " + std::to_string(programID) + ": start keyboard input");
+        print(startMessage + "keyboard input");
         std::this_thread::sleep_for(
             std::chrono::milliseconds( operation.duration )
         );
-        print("Interrupt: Process " + std::to_string(programID) + ": end keyboard input");
+        print(endMessage + "keyboard input");
     }
     else if( operation.description == "monitor" )
     {
-        print("I/O: Process " + std::to_string(programID) + ": start monitor output");
+        print(startMessage + "monitor output");
         std::this_thread::sleep_for(
             std::chrono::milliseconds( operation.duration )
         ); 
-        print("Interrupt: Process " + std::to_string(programID) + ": end monitor output");           
+        print(endMessage + "monitor output");           
     }
     else if( operation.description == "printer" )
     {
-        print("I/O: Process " + std::to_string(programID) + ": start printer output");
+        print(startMessage + "printer output");
         std::this_thread::sleep_for(
             std::chrono::milliseconds( operation.duration )
         ); 
-        print("Interrupt: Process " + std::to_string(programID) + ": end printer output");               
+        print(endMessage + "printer output");               
     }
     
     interrupts_.push(Interrupt( programID ));
