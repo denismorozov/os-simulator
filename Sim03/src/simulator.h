@@ -39,6 +39,8 @@ private:
 
     template<typename QueueType>
     void run_helper();
+    template<typename QueueType>
+    Program select_next_program( std::unique_ptr<QueueType> const &readyQueue );
 
     // Helper function that processes each individual program operation
     void process_program( Program &program );

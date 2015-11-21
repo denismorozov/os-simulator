@@ -1,7 +1,7 @@
 Start Simulator Configuration File
 Version/Phase: 3.0
 File Path: test_files/Test_3.mdf
-CPU Scheduling Code: FIFO-P
+CPU Scheduling Code: RR
 Quantum Time (cycles): 3
 Processor cycle time (msec): 10
 Monitor display time (msec): 20
