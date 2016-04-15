@@ -1,6 +1,6 @@
 Start Simulator Configuration File
 Version/Phase: 3.0
-File Path: test_files/Test_3.mdf
+File Path: test_files/Test.mdf
 CPU Scheduling Code: RR
 Quantum Time (cycles): 3
 Processor cycle time (msec): 10
