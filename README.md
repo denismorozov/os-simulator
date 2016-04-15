@@ -1,31 +1,30 @@
 # Operating System Simulator
-Project I made for my Principles of Operating Systems course which simulates a multiprogramming environment.
-A configuration file is used to set things like the scheduling algorithm, cycle times, and location of the meta-data file.
-The meta-data file provides a list of "programs" and the program's planned operations.
+This was a school project for my Principles of Operating Systems course. It attemps to simulate a multiprogramming environment by actively scheduling processes, creating async threads for I/O processing, and implementing simple interrupts. While just an exercise, this was incredibly fun to write.
 
-My personal goals for the project included following good design and programming practices, 
-experimenting with as many C++11 features as possible, practice using threads, 
-and take advantage of operating systems' need for lots and lots of data structures.
+It reads a list of programs and their operations, and then runs them with the specified CPU scheduling algorithm. The <b>meta-data file</b> provides the list of "programs" and their planned operations, while the <b>configuration file</b> is used to set things like the location of the meta-data file, the CPU scheduling algorithm, and CPU cycle times.
+
+My main goal for the project was to play around with C++11 and take the opportunity to use lots and lots of data structures. The entire simulator uses the same code for all three of the implemented scheduling algorithms. The only thing that's different is the queue which holds the programs. Because priority queues and queues have different syntax for adding and removing values, this also has a nice example of explicitly specializing templates in C++.
 
 ## Compiling and Running
+```bash
 make
 ./sim03 config.cnf
+```
 
 ## Configuration
-  <h3>Scheduling codes</h3>
-  FIFO-P - First In First Out - Preemptive
-  SRTF-P - Shortest Remaining Time First - Preemptive
-  RR - Round Robin
+### Scheduling codes
+<table>
+<tr><td>Code<td>Algorithm</td></tr>
+<tr><td>FIFO-P</td><td>First In First Out - Preemptive</td></tr>
+<tr><td>SRTF-P</td><td>Shortest Remaining Time First - Preemptive</td></tr>
+<tr><td>RR</td><td>Round Robin</td></tr>
+</table>
 
-  ### Meta-Data
-  make generator
-  ./generator
-  then follow on-screen instructions to generate a meta-data file.
 
-## Testing
-make tests
-./test
+### Meta-Data
+```bash
+make generator
+./generator
+```
+then follow on-screen instructions to generate a meta-data file.
 
-## To-Do
-- All data structures besides the initial vector should contain pointers
-- Tests
